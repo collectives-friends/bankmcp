@@ -141,14 +141,30 @@ Notifications go to `NOTIFY_WEBHOOK_URL` as a Slack message or a JSON POST.
 Enable Banking's own webhooks cover payment initiation only, so account data
 is polled. There is no way around that under PSD2.
 
-## Plugin
+## Claude Code plugin
 
-[plugin/](plugin/) is a Claude Code plugin with a skill that encodes how to
-work with the data: an account map, categorisation rules, the monthly review
-format and when to create watches. Copy
-[plugin/skills/openbank/SKILL.md](plugin/skills/openbank/SKILL.md) into your
-own skills and fill in the account map and your merchant rules. The server
-stays generic; your rules stay yours.
+The repository is also a Claude Code plugin marketplace. The `openbank` plugin
+bundles the connector entry and a skill that encodes how to work with the
+data: an account map, categorisation rules, the monthly review format and when
+to create watches.
+
+Point it at your server, then install:
+
+```bash
+export OPENBANK_URL=https://YOUR-HOST/mcp   # put this in your shell profile
+```
+
+```
+/plugin marketplace add noskillish/openbankingmcp
+/plugin install openbank@openbank
+```
+
+Then `/mcp`, select `bank`, Authenticate, and enter your password. No
+organisation admin is involved; plugins are per user.
+
+The skill lives at [plugin/skills/openbank/SKILL.md](plugin/skills/openbank/SKILL.md).
+Copy it into your own skills to fill in the account map and your merchant
+rules. The server stays generic; your rules stay yours.
 
 ## Running it on your own machine
 

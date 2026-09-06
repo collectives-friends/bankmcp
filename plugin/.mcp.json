@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "bank": {
+      "type": "http",
+      "url": "${OPENBANK_URL:-http://localhost:8080/mcp}"
+    }
+  }
+}
