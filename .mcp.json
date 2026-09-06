@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "dabba": {
+      "command": "node",
+      "args": ["--env-file=.env", "src/mcp.ts"]
+    }
+  }
+}

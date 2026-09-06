@@ -1,0 +1,31 @@
+{
+  "name": "dabba",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private personal banking dashboard on top of the Enable Banking API",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node --watch --env-file=.env src/server.ts",
+    "start": "node --env-file=.env src/server.ts",
+    "sync": "node --env-file=.env src/cli.ts sync",
+    "process": "node --env-file=.env src/cli.ts process",
+    "briefing": "node --env-file=.env src/cli.ts briefing",
+    "schedule": "node --env-file=.env src/cli.ts schedule",
+    "mcp": "node --env-file=.env src/mcp.ts",
+    "cert": "mkdir -p secrets && mkcert -cert-file secrets/localhost-cert.pem -key-file secrets/localhost-key.pem localhost 127.0.0.1",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.123.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "fastify": "^5.3.0",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.0"
+  }
+}
