@@ -12,7 +12,7 @@
       "description": "Bank™ for Claude Code: connects to your own open-banking server (openbanking-mcp, Enable Banking) and adds a skill with account mapping, categorisation rules and a monthly review format.",
       "version": "0.1.0",
       "author": { "name": "Nils Smed" },
-      "homepage": "https://github.com/noskillish/openbankingmcp",
+      "homepage": "https://github.com/noskillish/bank-mcp",
       "license": "MIT",
       "keywords": ["banking", "personal-finance", "psd2", "enable-banking"],
       "category": "productivity"

@@ -157,7 +157,7 @@ export OPENBANK_URL=https://YOUR-HOST/mcp   # put this in your shell profile
 ```
 
 ```
-/plugin marketplace add noskillish/openbankingmcp
+/plugin marketplace add noskillish/bank-mcp
 /plugin install openbanking@openbanking
 ```
 
