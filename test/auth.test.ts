@@ -100,3 +100,10 @@ test("revokeAll drops every token", async () => {
   await assert.rejects(provider.verifyAccessToken(tokens.access_token), /Invalid/);
   await assert.rejects(provider.exchangeRefreshToken(client, tokens.refresh_token!), /Invalid/);
 });
+
+test("clients may only redirect to allowed hosts", async () => {
+  const provider = new SingleUserProvider(new Store(join(mkdtempSync(join(tmpdir(), "bank-")), "store.json")));
+  await assert.rejects(async () => provider.clientsStore.registerClient!({ redirect_uris: ["https://evil.example/cb"] }), /not allowed/);
+  await provider.clientsStore.registerClient!({ redirect_uris: ["https://claude.ai/api/mcp/auth_callback", "http://localhost:53421/callback"] });
+  await assert.rejects(async () => provider.clientsStore.registerClient!({ redirect_uris: ["https://claude.ai.evil.example/cb"] }), /not allowed/);
+});

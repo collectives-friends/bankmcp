@@ -15,6 +15,12 @@ export const config = {
   adminPasswordHash: process.env.ADMIN_PASSWORD_HASH ?? "",
   adminPassword: process.env.ADMIN_PASSWORD ?? "",
   notifyWebhookUrl: process.env.NOTIFY_WEBHOOK_URL ?? "",
+  // Hosts an OAuth client may send the sign-in back to. Stops a phishing link
+  // from registering a client that redirects your authorization code elsewhere.
+  allowedRedirectHosts: (process.env.ALLOWED_REDIRECT_HOSTS ?? "claude.ai,claude.com,localhost,127.0.0.1")
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean),
   // Optional: terminate TLS in the process itself (for running on your own
   // machine). Hosted deployments normally get TLS from the platform.
   tlsCertPath: process.env.TLS_CERT_PATH ?? "",

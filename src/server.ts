@@ -20,6 +20,15 @@ const log = (msg: string, extra?: unknown) => console.log(`[bank ${new Date().to
 const app = express();
 app.set("trust proxy", 1);
 app.disable("x-powered-by");
+app.use((_req, res, next) => {
+  res.set({
+    "X-Frame-Options": "DENY",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+    "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
+  });
+  next();
+});
 
 const baseUrl = new URL(config.baseUrl);
 const mcpUrl = new URL("/mcp", baseUrl);

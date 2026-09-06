@@ -8,7 +8,7 @@ import type { OAuthServerProvider, AuthorizationParams } from "@modelcontextprot
 import type { OAuthRegisteredClientsStore } from "@modelcontextprotocol/sdk/server/auth/clients.js";
 import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import type { OAuthClientInformationFull, OAuthTokenRevocationRequest, OAuthTokens } from "@modelcontextprotocol/sdk/shared/auth.js";
-import { InvalidGrantError, InvalidClientError } from "@modelcontextprotocol/sdk/server/auth/errors.js";
+import { InvalidGrantError, InvalidClientError, InvalidClientMetadataError } from "@modelcontextprotocol/sdk/server/auth/errors.js";
 import { config } from "./config.ts";
 import { loginPage } from "./pages.ts";
 export { loginPage, shell as page } from "./pages.ts";
@@ -41,6 +41,15 @@ export function verifyPassword(password: string): boolean {
     return a.length === b.length && timingSafeEqual(a, b);
   }
   return false;
+}
+
+export function redirectAllowed(uri: string): boolean {
+  try {
+    const host = new URL(uri).hostname.toLowerCase();
+    return config.allowedRedirectHosts.some((h) => host === h || host.endsWith(`.${h}`));
+  } catch {
+    return false;
+  }
 }
 
 const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
@@ -90,6 +99,9 @@ export class SingleUserProvider implements OAuthServerProvider {
         return store.data.oauth.clients[clientId] as OAuthClientInformationFull | undefined;
       },
       registerClient(client) {
+        for (const uri of client.redirect_uris) {
+          if (!redirectAllowed(uri)) throw new InvalidClientMetadataError(`redirect_uri host not allowed: ${new URL(uri).hostname}. Set ALLOWED_REDIRECT_HOSTS on the server to permit it.`);
+        }
         // The SDK handler has already generated the id and, for confidential clients, the secret.
         const incoming = client as Partial<OAuthClient>;
         const full: OAuthClient = {
@@ -112,7 +124,7 @@ export class SingleUserProvider implements OAuthServerProvider {
     this.sweep();
     const id = token();
     this.pendingLogins.set(id, { client, params, expires: now() + LOGIN_TTL, attempts: 0 });
-    res.status(200).type("html").send(loginPage({ requestId: id, clientName: client.client_name }));
+    res.status(200).type("html").send(loginPage({ requestId: id, clientName: client.client_name, returnTo: new URL(params.redirectUri).hostname }));
   }
 
   /** Called by POST /login. Returns the redirect URL on success, or an error message. */

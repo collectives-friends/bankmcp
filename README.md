@@ -198,6 +198,10 @@ register `https://localhost:8080/callback` as a redirect URL.
 - State is one JSON file in `DATA_DIR`: consents, account ids, watches and
   OAuth tokens. Back it up if you care about not re-consenting; delete it to
   forget everything.
+- Only clients that redirect back to `claude.ai`, `claude.com` or localhost
+  can register (`ALLOWED_REDIRECT_HOSTS`), so a phishing link cannot route
+  your sign-in to another site. The sign-in page also names the host you will
+  be sent back to.
 - Anyone with the admin password can read your accounts. Use a long one.
   Every successful sign-in is logged and, if `NOTIFY_WEBHOOK_URL` is set,
   sent to you as a message. A sign-in you did not make is your alarm.

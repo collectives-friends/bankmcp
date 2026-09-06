@@ -52,11 +52,12 @@ export function shell(title: string, body: string, opts: { kind?: Kind; pill?: s
 </div></body></html>`;
 }
 
-export function loginPage(opts: { requestId: string; clientName?: string; error?: string }): string {
+export function loginPage(opts: { requestId: string; clientName?: string; returnTo?: string; error?: string }): string {
   const who = opts.clientName ? `<b>${esc(opts.clientName)}</b>` : "An app";
+  const back = opts.returnTo ? `<p class="muted">After signing in you are sent back to <b>${esc(opts.returnTo)}</b>. Stop if that is not where you came from.</p>` : "";
   return shell(
     "Allow access?",
-    `<p>${who} wants read-only access to your bank accounts through this server. It can see balances and transactions. It cannot move money.</p>
+    `<p>${who} wants read-only access to your bank accounts through this server. It can see balances and transactions. It cannot move money.</p>${back}
      ${opts.error ? `<p class="error">${esc(opts.error)}</p>` : ""}
      <form method="post" action="/login">
        <input type="hidden" name="request" value="${esc(opts.requestId)}">
