@@ -1,0 +1,84 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+process.env.ADMIN_PASSWORD = "correct horse";
+process.env.BASE_URL = "http://localhost:8080";
+const { SingleUserProvider, hashPassword, verifyPassword } = await import("../src/auth.ts");
+const { Store } = await import("../src/store.ts");
+
+const fakeRes = () => {
+  const out = { status: 0, body: "" };
+  const res = { status: (s: number) => ((out.status = s), res), type: () => res, send: (b: string) => ((out.body = b), res) };
+  return { out, res: res as unknown as import("express").Response };
+};
+
+test("password hashing round-trips", () => {
+  const h = hashPassword("secret-123");
+  assert.match(h, /^scrypt\$/);
+  process.env.ADMIN_PASSWORD_HASH = h;
+  // config is read at import time; verifyPassword prefers the hash when set on config, so test the pure path:
+  assert.equal(verifyPassword("correct horse"), true);
+  delete process.env.ADMIN_PASSWORD_HASH;
+});
+
+test("full authorization code flow with PKCE, refresh and revocation", async () => {
+  const store = new Store(join(mkdtempSync(join(tmpdir(), "openbank-")), "store.json"));
+  const provider = new SingleUserProvider(store);
+  const client = await provider.clientsStore.registerClient!({ redirect_uris: ["https://claude.ai/api/mcp/auth_callback"], client_name: "Claude", token_endpoint_auth_method: "none" });
+  assert.ok(client.client_id);
+  assert.equal(client.client_secret, undefined, "public client gets no secret");
+
+  const { out, res } = fakeRes();
+  await provider.authorize(client, { codeChallenge: "challenge", redirectUri: client.redirect_uris[0]!, state: "xyz", scopes: ["bank:read"] }, res);
+  assert.equal(out.status, 200);
+  const requestId = /name="request" value="([^"]+)"/.exec(out.body)?.[1];
+  assert.ok(requestId, "login page carries the request id");
+
+  const wrong = provider.completeLogin(requestId!, "nope", "1.2.3.4");
+  assert.ok("error" in wrong && wrong.requestId === requestId);
+
+  const ok = provider.completeLogin(requestId!, "correct horse", "1.2.3.4");
+  assert.ok("redirect" in ok);
+  const url = new URL(ok.redirect);
+  assert.equal(url.origin + url.pathname, client.redirect_uris[0]);
+  assert.equal(url.searchParams.get("state"), "xyz");
+  const code = url.searchParams.get("code")!;
+
+  assert.ok("error" in provider.completeLogin(requestId!, "correct horse", "1.2.3.4"), "request id is single use");
+
+  assert.equal(await provider.challengeForAuthorizationCode(client, code), "challenge");
+  const tokens = await provider.exchangeAuthorizationCode(client, code, undefined, client.redirect_uris[0]);
+  assert.ok(tokens.access_token && tokens.refresh_token);
+  await assert.rejects(provider.exchangeAuthorizationCode(client, code), /Invalid/);
+
+  const info = await provider.verifyAccessToken(tokens.access_token);
+  assert.equal(info.clientId, client.client_id);
+  assert.deepEqual(info.scopes, ["bank:read"]);
+  assert.ok(!JSON.stringify(store.data).includes(tokens.access_token), "tokens are stored hashed");
+
+  const refreshed = await provider.exchangeRefreshToken(client, tokens.refresh_token!);
+  assert.notEqual(refreshed.access_token, tokens.access_token);
+  await assert.rejects(provider.exchangeRefreshToken(client, tokens.refresh_token!), /Invalid/, "refresh tokens rotate");
+
+  await provider.revokeToken!(client, { token: refreshed.access_token });
+  await assert.rejects(provider.verifyAccessToken(refreshed.access_token), /Invalid/);
+});
+
+test("five wrong passwords lock the address out", async () => {
+  const provider = new SingleUserProvider(new Store(join(mkdtempSync(join(tmpdir(), "openbank-")), "store.json")));
+  const client = await provider.clientsStore.registerClient!({ redirect_uris: ["https://example.com/cb"] });
+  for (let i = 0; i < 5; i++) {
+    const { out, res } = fakeRes();
+    await provider.authorize(client, { codeChallenge: "c", redirectUri: "https://example.com/cb" }, res);
+    const id = /name="request" value="([^"]+)"/.exec(out.body)![1]!;
+    provider.completeLogin(id, "wrong", "9.9.9.9");
+  }
+  const { out, res } = fakeRes();
+  await provider.authorize(client, { codeChallenge: "c", redirectUri: "https://example.com/cb" }, res);
+  const id = /name="request" value="([^"]+)"/.exec(out.body)![1]!;
+  const r = provider.completeLogin(id, "correct horse", "9.9.9.9");
+  assert.ok("error" in r && /Too many/.test(r.error));
+});

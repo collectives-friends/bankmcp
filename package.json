@@ -1,30 +1,29 @@
 {
-  "name": "dabba",
+  "name": "openbank-mcp",
   "version": "0.1.0",
-  "private": true,
-  "description": "Private personal banking dashboard on top of the Enable Banking API",
+  "description": "Self-hosted MCP server that gives Claude read-only access to your own bank accounts via Enable Banking (PSD2)",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=24"
   },
   "scripts": {
+    "start": "node src/server.ts",
     "dev": "node --watch --env-file=.env src/server.ts",
-    "start": "node --env-file=.env src/server.ts",
-    "sync": "node --env-file=.env src/cli.ts sync",
-    "process": "node --env-file=.env src/cli.ts process",
-    "briefing": "node --env-file=.env src/cli.ts briefing",
-    "schedule": "node --env-file=.env src/cli.ts schedule",
-    "mcp": "node --env-file=.env src/mcp.ts",
-    "cert": "mkdir -p secrets && mkcert -cert-file secrets/localhost-cert.pem -key-file secrets/localhost-key.pem localhost 127.0.0.1",
+    "stdio": "node --env-file=.env src/stdio.ts",
+    "check": "node --env-file-if-exists=.env src/cli.ts check",
+    "hash-password": "node src/cli.ts hash-password",
+    "watch": "node --env-file-if-exists=.env src/cli.ts watch",
+    "test": "node --test test/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.123.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "fastify": "^5.3.0",
+    "express": "^5.2.1",
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@types/express": "^5.0.0",
     "@types/node": "^24.0.0",
     "typescript": "^5.8.0"
   }

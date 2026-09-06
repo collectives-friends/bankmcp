@@ -1,7 +1,8 @@
+// Thin typed client for the Enable Banking API. Every request carries an
+// RS256 JWT signed with the application's private key (see the quick start at
+// https://enablebanking.com/docs/api/quick-start/).
 import { createPrivateKey, createSign, type KeyObject } from "node:crypto";
 import { config, readPrivateKey } from "./config.ts";
-
-// --- Types (subset of the Enable Banking OpenAPI schema we actually use) ---
 
 export interface Amount {
   currency: string;
@@ -24,7 +25,7 @@ export interface AccountResource {
   name?: string;
   product?: string;
   currency: string;
-  cash_account_type: string;
+  cash_account_type?: string;
   identification_hash: string;
 }
 
@@ -41,7 +42,7 @@ export interface Transaction {
   transaction_id?: string;
   transaction_amount: Amount;
   credit_debit_indicator: "CRDT" | "DBIT";
-  status: "BOOK" | "PDNG" | "RJCT" | "SCHD" | "CNCL" | "ACSC" | "PATC" | "OTHR" | string;
+  status: string;
   booking_date?: string;
   value_date?: string;
   transaction_date?: string;
@@ -63,7 +64,7 @@ export interface Session {
 }
 
 export interface SessionStatus {
-  status: "AUTHORIZED" | "CANCELLED" | "CLOSED" | "EXPIRED" | "INVALID" | "PENDING_AUTHORIZATION" | "RETURNED_FROM_BANK" | "REVOKED" | string;
+  status: string;
   accounts: string[];
   aspsp: { name: string; country: string };
   access: { valid_until: string };
@@ -88,28 +89,25 @@ export class EnableBankingError extends Error {
     this.status = status;
     this.body = body;
   }
+  /** True when the bank consent behind this call is no longer usable. */
+  get consentGone(): boolean {
+    return this.status === 401 || this.status === 403 || this.status === 410 || /session|consent|expired|revoked/i.test(this.body);
+  }
 }
 
-// --- JWT (RS256, signed with the application's private key) ---
+// --- JWT ---
 
 let keyObject: KeyObject | undefined;
 let cachedToken: { value: string; exp: number } | undefined;
 
-function b64url(input: Buffer | string): string {
-  return Buffer.from(input).toString("base64url");
-}
+const b64url = (input: Buffer | string) => Buffer.from(input).toString("base64url");
 
-export function makeJwt(): string {
-  const now = Math.floor(Date.now() / 1000);
+export function makeJwt(now = Math.floor(Date.now() / 1000)): string {
   if (cachedToken && cachedToken.exp - now > 300) return cachedToken.value;
-
   keyObject ??= createPrivateKey(readPrivateKey());
   const header = b64url(JSON.stringify({ typ: "JWT", alg: "RS256", kid: config.appId }));
-  const payload = b64url(
-    JSON.stringify({ iss: "enablebanking.com", aud: "api.enablebanking.com", iat: now, exp: now + 3600 }),
-  );
+  const payload = b64url(JSON.stringify({ iss: "enablebanking.com", aud: "api.enablebanking.com", iat: now, exp: now + 3600 }));
   const signature = createSign("RSA-SHA256").update(`${header}.${payload}`).sign(keyObject).toString("base64url");
-
   cachedToken = { value: `${header}.${payload}.${signature}`, exp: now + 3600 };
   return cachedToken.value;
 }
@@ -119,7 +117,6 @@ export function makeJwt(): string {
 async function api<T>(method: string, path: string, body?: unknown, query?: Record<string, string | undefined>): Promise<T> {
   const url = new URL(path, config.apiBase);
   for (const [k, v] of Object.entries(query ?? {})) if (v !== undefined && v !== "") url.searchParams.set(k, v);
-
   const res = await fetch(url, {
     method,
     headers: {
@@ -129,13 +126,15 @@ async function api<T>(method: string, path: string, body?: unknown, query?: Reco
     },
     body: body ? JSON.stringify(body) : undefined,
   });
-
   const text = await res.text();
   if (!res.ok) throw new EnableBankingError(res.status, text);
   return (text ? JSON.parse(text) : {}) as T;
 }
 
-// --- Endpoints ---
+export interface TransactionPage {
+  transactions: Transaction[];
+  continuation_key?: string;
+}
 
 export const eb = {
   getApplication: () => api<Application>("GET", "/application"),
@@ -152,28 +151,15 @@ export const eb = {
     }),
 
   createSession: (code: string) => api<Session>("POST", "/sessions", { code }),
-
   getSession: (sessionId: string) => api<SessionStatus>("GET", `/sessions/${sessionId}`),
-
   deleteSession: (sessionId: string) => api<unknown>("DELETE", `/sessions/${sessionId}`),
 
-  getBalances: async (accountUid: string) =>
-    (await api<{ balances: Balance[] }>("GET", `/accounts/${accountUid}/balances`)).balances,
+  getBalances: async (accountUid: string) => (await api<{ balances: Balance[] }>("GET", `/accounts/${accountUid}/balances`)).balances,
 
-  /** Fetches every page of transactions in the given date range. */
-  async getTransactions(accountUid: string, opts: { dateFrom?: string; dateTo?: string } = {}): Promise<Transaction[]> {
-    const all: Transaction[] = [];
-    let continuationKey: string | undefined;
-    do {
-      const page = await api<{ transactions: Transaction[]; continuation_key?: string }>(
-        "GET",
-        `/accounts/${accountUid}/transactions`,
-        undefined,
-        { date_from: opts.dateFrom, date_to: opts.dateTo, continuation_key: continuationKey },
-      );
-      all.push(...page.transactions);
-      continuationKey = page.continuation_key || undefined;
-    } while (continuationKey);
-    return all;
-  },
+  getTransactionPage: (accountUid: string, opts: { dateFrom?: string; dateTo?: string; continuationKey?: string } = {}) =>
+    api<TransactionPage>("GET", `/accounts/${accountUid}/transactions`, undefined, {
+      date_from: opts.dateFrom,
+      date_to: opts.dateTo,
+      continuation_key: opts.continuationKey,
+    }),
 };

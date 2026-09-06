@@ -1,151 +1,214 @@
-# Dabba
+# openbank-mcp
 
-A private, single-user financial cockpit that runs on your own machine. It
-connects to your banks through the [Enable Banking](https://enablebanking.com)
-open-banking API, keeps everything in a local SQLite file, and runs your
-household like a small business: a P&L, a balance sheet, a cash-flow forecast,
-and a weekly CFO briefing.
+Ask Claude about your own money.
 
-Nothing leaves your computer except the calls to Enable Banking (and, if you
-opt in, anonymous merchant strings to the Claude API for categorization). You
-log in at your bank's own site during authorization; the app never sees your
-bank credentials.
+openbank-mcp is a small server you host yourself. It connects to your banks
+through [Enable Banking](https://enablebanking.com), which wraps 2,700+
+European banks in one PSD2 API, and exposes them to Claude as an MCP
+connector. Read-only, no payments, no third party holding your data.
 
-## What it does
+> "Has the invoice from Acme been paid?" · "What did we spend on groceries in
+> August?" · "Which subscriptions am I paying for, and what do they cost per
+> year?" · "Tell me when my balance drops below 5,000."
 
-- **Accounts & net worth** — all linked accounts, assets minus liabilities,
-  daily history reconstructed from the banks' running balances.
-- **Ledger** — internal transfers between your own accounts are netted out;
-  every transaction gets a category from ~350 built-in rules for Danish
-  merchants, your own rules, or (optionally) Claude for the long tail.
-- **P&L** — monthly income, expenses by category, net and savings rate;
-  budgets per category.
-- **Three scopes** — *Household* (all accounts, transfers between your own
-  accounts netted), *Me* (personal accounts; what you send to shared accounts
-  counts as a cost, what comes back as a reimbursement) and *Shared accounts*
-  (the joint accounts; both partners' transfers are the funding). Set an
-  account's owner to personal/joint on its card.
-- **This month** — where the month closes (income so far + expected, spent so
-  far + bills due + everyday spend at the usual pace), the big spends, lumpy
-  quarterly bills with a monthly reserve, and the savings-rate gap to your
-  target with the levers that close it.
-- **Spending overview** — where the money goes, what's trending up, what
-  subscriptions cost per year, and a ranked list of where to cut.
-- **Recurring** — rent, subscriptions, salary and other regular items detected
-  automatically, with next expected date and yearly cost.
-- **Forecast & runway** — projected liquid balance for 90 days from recurring
-  items plus baseline spending; months of runway at current burn.
-- **Weekly briefing** — Monday morning summary with anomalies (duplicates,
-  unusually large charges, new merchants), upcoming bills, budget status and
-  the top cuts. Optional Slack delivery and an AI-written narrative.
-- **MCP server** — ask Claude Code questions against your real ledger.
-- **Privacy mode** — one key (P) masks every amount, name and account number.
+## How it works
 
-## Requirements
+```
+Claude ──OAuth──▶ your openbank-mcp server ──JWT──▶ Enable Banking ──PSD2──▶ your bank
+```
 
-- Node.js 24 or newer (uses the built-in `node:sqlite` and TypeScript support)
-- An Enable Banking account
-- macOS for the launchd schedule (everything else is portable)
+- **Claude** talks to your server as a custom connector. You sign in once with
+  a password; tokens handle the rest.
+- **Your server** holds the Enable Banking application key, the bank consents
+  and your account ids. It never stores balances or transactions and sends no
+  telemetry.
+- **Enable Banking** is the licensed provider. You log in at your bank's own
+  site to approve access; nobody sees your bank credentials.
 
 ## Setup
 
-1. Create a locally trusted certificate for `localhost` (Enable Banking only
-   accepts `https://` redirect URLs for production applications). This uses
-   [mkcert](https://github.com/FiloSottile/mkcert); `mkcert -install` asks for
-   your password once to trust its local CA in the system keychain:
+You need: an Enable Banking account (free), a place to run a container with a
+public https URL, and 15 minutes.
 
-   ```bash
-   brew install mkcert && mkcert -install && npm run cert
-   ```
+### 1. Register an Enable Banking application
 
-2. Register an application at <https://enablebanking.com/cp/applications>:
-   - Environment: **Sandbox** to test, **Production** for your real accounts
-     (see *Going live* below)
-   - Keep the default "generate private key" option; a `.pem` file downloads
-   - Redirect URL: `https://localhost:3000/callback`
-   - Note the application id (a UUID) shown after saving
+At <https://enablebanking.com/cp/applications> create an application:
 
-3. Put the key and id in place:
+- Environment: **Production** (your real accounts) or **Sandbox** (test data).
+- Keep "generate private key" selected. A `.pem` file downloads; keep it safe.
+- Redirect URL: `https://YOUR-HOST/callback`.
+- Production asks for a description, a data-protection email and privacy and
+  terms URLs. Use `https://YOUR-HOST/privacy` and `https://YOUR-HOST/terms`;
+  the server serves both.
 
-   ```bash
-   mv ~/Downloads/<app-id>.pem secrets/enablebanking.pem
-   cp .env.example .env   # then set EB_APP_ID
-   ```
+Note the application id (a UUID) shown after saving.
 
-4. Install and run:
+### 2. Deploy
 
-   ```bash
-   npm install
-   npm run dev
-   ```
+Any container host works. Set these environment variables:
 
-5. Open <https://localhost:3000>, click **Connect bank**, pick a bank and log in.
+| Variable | Value |
+|---|---|
+| `EB_APP_ID` | the application id |
+| `EB_PRIVATE_KEY` | the `.pem` contents, base64: `base64 -i app.pem \| tr -d '\n'` |
+| `BASE_URL` | `https://YOUR-HOST` |
+| `ADMIN_PASSWORD_HASH` | output of `npm run hash-password` (or set `ADMIN_PASSWORD`) |
+| `DEFAULT_COUNTRY` | your country code, e.g. `DK` |
+
+and mount a volume at `/data`. Optional: `NOTIFY_WEBHOOK_URL` for watch
+notifications (a Slack incoming webhook works). Full list in
+[.env.example](.env.example).
+
+With Docker Compose on your own box:
+
+```bash
+cp .env.example .env    # fill it in
+docker compose up -d
+```
+
+Put a TLS terminator in front (Caddy needs two lines:
+`YOUR-HOST { reverse_proxy localhost:8080 }`). Platforms like Fly.io and
+Railway provide https themselves; give them the image from the
+[Dockerfile](Dockerfile), the variables above and a volume at `/data`.
+
+Open `https://YOUR-HOST/`. It shows what is still missing, or the connector URL
+when everything is in place. `npm run check` does the same from a terminal and
+also confirms the redirect URL is registered.
+
+### 3. Add the connector in Claude
+
+In claude.ai (or the desktop app): **Settings → Connectors → Add custom
+connector**. Name it, paste `https://YOUR-HOST/mcp`, save, then click
+**Connect**. Your server shows a password page; enter the admin password. That
+is the only login you will do.
+
+In Claude Code:
+
+```bash
+claude mcp add --transport http openbank https://YOUR-HOST/mcp
+```
+
+then run `/mcp` inside Claude Code to sign in.
+
+### 4. Connect your bank
+
+In Claude, say **"connect my bank"** (or use the `connect-bank` prompt). Claude
+looks up your bank, gives you a link, you log in at the bank and approve, and
+the accounts appear. Consents last up to 180 days; Claude tells you when one
+is about to expire and the same conversation renews it.
+
+Give accounts labels ("Everyday", "Joint expenses", "Mortgage") when Claude
+suggests them. Every tool accepts labels instead of ids.
 
 ## Going live with your own accounts
 
 Enable Banking's production environment normally requires a contract, but it
-offers a **restricted mode** for linking *your own* bank accounts, explicitly
-allowed for individual non-commercial use:
+has a **restricted mode** for accessing *your own* accounts, explicitly allowed
+for individual non-commercial use. After registering a Production application:
 
-1. Register an application with environment **Production**. It also asks for a
-   description, a data-protection email, and privacy-policy and terms-of-service
-   URLs; the app serves suitable pages at `https://localhost:3000/privacy` and
-   `https://localhost:3000/terms`, and these are not verified for restricted-mode
-   activation.
-2. On the new (Inactive) application click **Activate by linking accounts**,
-   log in at your bank and approve. Repeat for every account you want — the API
-   only ever returns accounts you linked.
-3. Point `.env` at the production app id and key and restart.
+1. On the (Inactive) application click **Activate by linking accounts**.
+2. Log in at your bank and approve. Repeat for each bank you want.
+3. The application becomes active and the API only ever returns accounts you
+   linked this way.
 
-Consents last up to 180 days for most banks; the dashboard shows the days left
-and you reconnect the bank when it runs out.
+Read the *Restriction of Use* section of Enable Banking's
+[Terms of Service](https://enablebanking.com/terms-of-service/) before you
+rely on it: restricted mode is for your own accounts, not for offering a
+service to others. This project does not change those terms.
+
+## What you get
+
+**Tools** (all read-only):
+
+| Tool | What it does |
+|---|---|
+| `list_banks`, `start_consent`, `consent_status`, `disconnect_bank` | connect and manage banks |
+| `list_accounts`, `set_account_label` | accounts with booked balances; your own names for them |
+| `get_balances` | booked and available balance for one account |
+| `get_transactions` | signed amounts, one counterparty, one description; paginated |
+| `create_watch`, `list_watches`, `delete_watch`, `check_watches` | background rules with webhook notifications |
+
+**Prompts**: `connect-bank`, `monthly-summary`, `subscription-audit`,
+`unusual-transactions`.
+
+**Watches** run on the server. Rules: balance below or above an amount, a
+single debit over an amount, an incoming or outgoing payment matching a name,
+and "tell me if this payment has not arrived by this date". Accounts are
+checked at most four times a day, the PSD2 limit for unattended access.
+Notifications go to `NOTIFY_WEBHOOK_URL` as a Slack message or a JSON POST.
+
+Enable Banking's own webhooks cover payment initiation only, so account data
+is polled. There is no way around that under PSD2.
+
+## Plugin
+
+[plugin/](plugin/) is a Claude Code plugin with a skill that encodes how to
+work with the data: an account map, categorisation rules, the monthly review
+format and when to create watches. Copy
+[plugin/skills/openbank/SKILL.md](plugin/skills/openbank/SKILL.md) into your
+own skills and fill in the account map and your merchant rules. The server
+stays generic; your rules stay yours.
+
+## Running it on your own machine
+
+The server can also run locally over stdio, with no OAuth, for Claude Code in
+this directory. The repository ships a `.mcp.json` for that:
+
+```bash
+npm install
+cp .env.example .env    # EB_APP_ID, EB_PRIVATE_KEY_PATH, ADMIN_PASSWORD
+npm run dev             # http server, for the bank redirect
+```
+
+Production applications require an https redirect URL even locally. Create a
+certificate with [mkcert](https://github.com/FiloSottile/mkcert), set
+`TLS_CERT_PATH`, `TLS_KEY_PATH` and `BASE_URL=https://localhost:8080`, and
+register `https://localhost:8080/callback` as a redirect URL.
+
+## Security notes
+
+- The server is a complete OAuth 2.1 authorization server with one user.
+  Discovery, dynamic client registration and PKCE come from the MCP SDK;
+  tokens are stored hashed; five wrong passwords lock an address out for
+  fifteen minutes.
+- State is one JSON file in `DATA_DIR`: consents, account ids, watches and
+  OAuth tokens. Back it up if you care about not re-consenting; delete it to
+  forget everything.
+- Anyone with the admin password can read your accounts. Use a long one.
+- There are no payment tools and none will be added. Payments need a
+  licensed PISP and a very different security model.
 
 ## Commands
 
 ```bash
-npm run dev          # web app with reload
-npm run sync         # fetch from the banks and rebuild the ledger
-npm run process      # rebuild the ledger only (add -- --reset to re-derive everything not set by hand)
-npm run briefing     # generate the weekly briefing (posts to BRIEFING_WEBHOOK_URL if set)
-npm run schedule     # install launchd jobs: sync daily 07:00, briefing Mondays 07:30 (-- remove to uninstall)
-npm run mcp          # MCP server over stdio
+npm start              # http server (reads env from the environment)
+npm run dev            # same, with reload and .env
+npm run check          # verify config and the Enable Banking application
+npm run hash-password  # produce ADMIN_PASSWORD_HASH
+npm run watch -- --force   # run all watches once, print what fired
+npm test               # unit tests (node:test)
+npm run typecheck
 ```
 
-## Optional integrations (`.env`)
-
-- `ANTHROPIC_API_KEY` — Claude categorizes merchants the rules don't know and
-  writes a short narrative for the briefing.
-- `BRIEFING_WEBHOOK_URL` — a Slack incoming-webhook URL; Monday's briefing is
-  posted there.
-
-## Ask your ledger from Claude Code
-
-The project ships a `.mcp.json`, so opening this directory in Claude Code
-exposes tools like `pnl`, `spending_overview`, `search_transactions`,
-`forecast`, `recurring`, `anomalies` and a read-only `query_sql`. Ask things
-like "what did we spend on eating out in August, split by account?" and get an
-answer from your real numbers.
+Requires Node 24 or newer (runs TypeScript directly, no build step).
 
 ## Layout
 
 ```
-src/config.ts         environment + setup checks
+src/server.ts         Express: /mcp behind OAuth, OAuth endpoints, /callback, status page
+src/auth.ts           single-user OAuth provider, password login page
+src/mcp.ts            McpServer factory (tools + prompts + instructions)
+src/tools.ts          the MCP tools
+src/prompts.ts        the MCP prompts
+src/watcher.ts        background rule checks and notifications
 src/enablebanking.ts  JWT signing and a thin typed API client
-src/db.ts             SQLite schema, migrations and core queries
-src/sync.ts           pull balances/transactions, then run the pipeline
-src/pipeline.ts       transfers → rules → AI → recurring → snapshots
-src/categories.ts     chart of accounts and built-in rules
-src/categorize.ts     rule engine, manual overrides, Claude fallback
-src/transfers.ts      internal-transfer pairing
-src/recurring.ts      recurring-payment detection
-src/analytics.ts      net worth, P&L, spending overview, forecast, anomalies
-src/briefing.ts       weekly briefing (facts → markdown → optional narrative)
-src/schedule.ts       launchd install/remove
-src/server.ts         Fastify routes: UI, connect flow, JSON API
-src/cli.ts            command line entry points
-src/mcp.ts            MCP server
-public/index.html     the dashboard (vanilla JS, inline SVG charts)
+src/store.ts          the JSON state file
+src/data.ts           shaping balances and transactions for an assistant
+src/stdio.ts          local stdio entry point
+src/cli.ts            check, hash-password, watch
+plugin/               Claude Code plugin with the openbank skill
 ```
 
-The server binds to `127.0.0.1` only. There is no login, so do not expose it to
-a network.
+## License
+
+MIT

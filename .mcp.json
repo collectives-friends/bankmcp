@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "dabba": {
+    "openbank": {
       "command": "node",
-      "args": ["--env-file=.env", "src/mcp.ts"]
+      "args": ["--env-file=.env", "src/stdio.ts"]
     }
   }
 }
