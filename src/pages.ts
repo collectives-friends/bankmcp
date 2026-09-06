@@ -105,11 +105,20 @@ export function statusPage(input: { problems: string[]; mcpUrl: string; callback
   );
 }
 
-export function setupPage(opts: { error?: string; values?: { app_id?: string; country?: string } } = {}): string {
+export const CONSENT_DESCRIPTION = `${config.appName} lets you ask Claude about your own accounts. It can read balances and transactions. It can never move money, and only you can use it. Revoke access at your bank at any time.`;
+
+export function setupPage(opts: { error?: string; values?: { app_id?: string; country?: string }; baseUrl?: string } = {}): string {
   const v = opts.values ?? {};
+  const base = (opts.baseUrl ?? config.baseUrl).replace(/\/+$/, "");
+  const row = (label: string, value: string) => `<p class="muted" style="margin:14px 0 4px">${esc(label)}</p><code>${esc(value)}</code>`;
   return shell(
     `Set up ${config.appName}`,
-    `<p>Three things from your <a href="https://enablebanking.com/cp/applications" target="_blank" rel="noopener">Enable Banking application</a>, and a password. Nothing leaves this server.</p>
+    `<p>First register an application at <a href="https://enablebanking.com/cp/applications" target="_blank" rel="noopener">Enable Banking</a>. Its form asks for these values:</p>
+     ${row("Allowed redirect URL", `${base}/callback`)}
+     ${row("Application description", CONSENT_DESCRIPTION)}
+     ${row("Privacy URL", `${base}/privacy`)}
+     ${row("Terms URL", `${base}/terms`)}
+     <p class="muted" style="margin-top:14px">Environment: <b>Production</b> for your real accounts, <b>Sandbox</b> to try with test data. Keep <b>generate private key</b> selected; a <code style="padding:1px 6px">.pem</code> file downloads once when you save. That file and the application id shown after saving go here:</p>
      ${opts.error ? `<p class="error">${esc(opts.error)}</p>` : ""}
      <form method="post" action="/setup" id="setup">
        <label for="app_id">Application id</label>

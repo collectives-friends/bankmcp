@@ -82,7 +82,7 @@ const callbackUrl = new URL("/callback", baseUrl).href;
 const setupCsp = "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
 
 app.get("/", (_req, res) => {
-  if (setupAvailable()) return void res.set("Content-Security-Policy", setupCsp).type("html").send(setupPage());
+  if (setupAvailable()) return void res.set("Content-Security-Policy", setupCsp).type("html").send(setupPage({ baseUrl: config.baseUrl }));
   res.type("html").send(statusPage({ problems: setupProblems(), mcpUrl: mcpUrl.href, callbackUrl }));
 });
 
@@ -90,7 +90,7 @@ app.post("/setup", express.urlencoded({ extended: false, limit: "64kb" }), (req,
   if (!setupAvailable()) return void res.status(404).type("html").send(failedPage("Setup is already complete."));
   const body = req.body as Record<string, string | undefined>;
   const error = applySetup(body);
-  if (error) return void res.status(400).set("Content-Security-Policy", setupCsp).type("html").send(setupPage({ error, values: { app_id: body.app_id, country: body.country } }));
+  if (error) return void res.status(400).set("Content-Security-Policy", setupCsp).type("html").send(setupPage({ error, values: { app_id: body.app_id, country: body.country }, baseUrl: config.baseUrl }));
   log("setup completed via the setup page");
   rememberPasswordFingerprint();
   startWatcherOnce();

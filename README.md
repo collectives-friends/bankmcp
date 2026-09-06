@@ -28,32 +28,13 @@ Claude ──OAuth──▶ your Bank™ server ──JWT──▶ Enable Bankin
 
 ## Setup
 
-You need: an Enable Banking account (free), a place to run a container with a
-public https URL, and 15 minutes.
+You need an Enable Banking account (free), a place to run a container with a
+public https address, and about fifteen minutes.
 
-### 1. Register an Enable Banking application
-
-At <https://enablebanking.com/cp/applications> create an application:
-
-- Environment: **Production** (your real accounts) or **Sandbox** (test data).
-- Keep "generate private key" selected. A `.pem` file downloads; keep it safe.
-- Redirect URL: `https://YOUR-HOST/callback`. If you do not know the address
-  yet, leave it and add it after step 2; the status page shows the exact URL.
-- Production asks for a description, a data-protection email and privacy and
-  terms URLs. Use `https://YOUR-HOST/privacy` and `https://YOUR-HOST/terms`;
-  the server serves both. The description is what you read on the consent
-  screen each time you connect a bank, so write it for that moment:
-
-  > Bank™ lets you ask Claude about your own accounts. It can read balances
-  > and transactions. It can never move money, and only you can use it. Revoke
-  > access at your bank at any time.
-
-Note the application id (a UUID) shown after saving.
-
-### 2. Deploy
+### 1. Deploy
 
 Any container host works. The server needs a persistent volume at `/data`
-and a public https address; everything else it asks you for on first run.
+and a public https address; it asks you for everything else in the browser.
 
 **Railway:** New Project, Deploy from GitHub repo, pick this repo. Add a
 volume mounted at `/data` and generate a domain (Settings, Networking, port
@@ -66,15 +47,28 @@ terminator in front (Caddy needs two lines:
 public address. Fly.io works like Railway: volume at `/data`, the app name
 gives the address.
 
-Then open the address. The first visit shows a setup page: paste the
-application id, choose the `.pem` file, pick a password of twelve characters
-or more. That is stored on the volume and the page turns into a status page
-with two addresses to copy: the redirect URL to register at Enable Banking
-(step 1 above; add it now if you did not know the address yet) and the
-connector URL for Claude.
+Open the address. A fresh server shows a setup page.
 
-Prefer configuration by environment? Set the variables and the setup page
-never appears:
+### 2. Register an Enable Banking application
+
+The setup page lists the exact values Enable Banking's form asks for: the
+redirect URL, a description for the consent screen, and the privacy and
+terms URLs, all pointing at your server. At
+<https://enablebanking.com/cp/applications> create an application with them:
+
+- Environment: **Production** for your real accounts, **Sandbox** for test
+  data (see *Going live* below for the production rules).
+- Keep "generate private key" selected. A `.pem` file downloads once when you
+  save; that is the key. The application id (a UUID) is shown after saving.
+
+### 3. Finish setup
+
+Back on the setup page: paste the application id, choose the `.pem` file, pick
+a password of twelve characters or more. Everything is stored on the volume,
+and the page turns into a status page showing the connector URL for Claude.
+
+Prefer configuration by environment? Set these and the setup page never
+appears:
 
 | Variable | Value |
 |---|---|
@@ -89,7 +83,7 @@ Optional: `NOTIFY_WEBHOOK_URL` for watch notifications and sign-in alerts (a
 Slack incoming webhook works). Full list in [.env.example](.env.example).
 `npm run check` verifies a configuration from a terminal.
 
-### 3. Add the connector in Claude
+### 4. Add the connector in Claude
 
 In claude.ai (or the desktop app): **Settings → Connectors → Add custom
 connector**. Name it `Bank™`, paste `https://YOUR-HOST/mcp`, save, then click
@@ -104,7 +98,7 @@ claude mcp add --transport http bank https://YOUR-HOST/mcp
 
 then run `/mcp` inside Claude Code to sign in.
 
-### 4. Connect your bank
+### 5. Connect your bank
 
 In Claude, say **"connect my bank"** (or use the `connect-bank` prompt). Claude
 looks up your bank, gives you a link, you log in at the bank and approve, and
