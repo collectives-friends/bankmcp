@@ -162,7 +162,7 @@ export OPENBANK_URL=https://YOUR-HOST/mcp   # put this in your shell profile
 ```
 
 ```
-/plugin marketplace add noskillish/bank-mcp
+/plugin marketplace add noskillish/bank
 /plugin install bank@bank
 ```
 

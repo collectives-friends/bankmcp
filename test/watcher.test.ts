@@ -23,17 +23,17 @@ test("large_debit fires once per transaction", () => {
 });
 
 test("credit_missing_by notifies on arrival and deactivates", () => {
-  const w = watch({ type: "credit_missing_by", match: "solita", by_date: "2026-09-30" });
-  assert.equal(evaluate(account, [w], undefined, [tx("old", 50000, "Solita Oy", "2026-08-20")], "2026-09-06").length, 0, "credits before the watch was created do not count");
+  const w = watch({ type: "credit_missing_by", match: "acme", by_date: "2026-09-30" });
+  assert.equal(evaluate(account, [w], undefined, [tx("old", 50000, "Acme Ltd", "2026-08-20")], "2026-09-06").length, 0, "credits before the watch was created do not count");
   assert.equal(w.active, true);
-  const events = evaluate(account, [w], undefined, [tx("new", 50000, "SOLITA OY")], "2026-09-06");
+  const events = evaluate(account, [w], undefined, [tx("new", 50000, "ACME LTD")], "2026-09-06");
   assert.equal(events.length, 1);
   assert.match(events[0]!.text, /arrived/);
   assert.equal(w.active, false);
 });
 
 test("credit_missing_by fires on the deadline", () => {
-  const w = watch({ type: "credit_missing_by", match: "solita", by_date: "2026-09-30" });
+  const w = watch({ type: "credit_missing_by", match: "acme", by_date: "2026-09-30" });
   assert.equal(evaluate(account, [w], undefined, [], "2026-09-29").length, 0);
   const events = evaluate(account, [w], undefined, [], "2026-09-30");
   assert.equal(events.length, 1);

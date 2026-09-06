@@ -25,20 +25,20 @@ test("credits are positive and take the debtor", () => {
     credit_debit_indicator: "CRDT",
     status: "BOOK",
     booking_date: "2026-09-01",
-    debtor: { name: "Solita" },
+    debtor: { name: "Acme Ltd" },
   });
   assert.equal(t.amount, 10000);
-  assert.equal(t.counterparty, "Solita");
+  assert.equal(t.counterparty, "Acme Ltd");
   assert.equal(t.description, undefined);
 });
 
 test("booked prefers CLBD, then ITBD; available is XPCD", () => {
   const b = simplifyBalances([
-    { balance_type: "XPCD", balance_amount: { amount: "228.00", currency: "DKK" } },
-    { balance_type: "ITBD", balance_amount: { amount: "-715000.00", currency: "DKK" } },
+    { balance_type: "XPCD", balance_amount: { amount: "1500.00", currency: "DKK" } },
+    { balance_type: "ITBD", balance_amount: { amount: "-500000.00", currency: "DKK" } },
   ]);
-  assert.equal(b.booked, -715000);
-  assert.equal(b.available, 228);
+  assert.equal(b.booked, -500000);
+  assert.equal(b.available, 1500);
   const c = simplifyBalances([
     { balance_type: "ITBD", balance_amount: { amount: "1", currency: "EUR" } },
     { balance_type: "CLBD", balance_amount: { amount: "2", currency: "EUR" } },
