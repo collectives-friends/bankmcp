@@ -73,7 +73,7 @@ export function connectedPage(session: { aspsp: { name: string }; access: { vali
   return shell(
     `${session.aspsp.name} is linked`,
     `<p>${n} account${n === 1 ? "" : "s"} shared, read-only.</p>
-     <ul class="rows">${session.accounts.map((a) => `<li><span>${esc(a.name ?? a.product ?? a.uid)}</span><span class="r">${esc(a.currency)}</span></li>`).join("")}</ul>
+     <ul class="rows">${session.accounts.map((a) => `<li><span>${esc([a.name, a.product].filter(Boolean).join(" · ") || a.uid)}</span><span class="r">${esc(a.currency)}</span></li>`).join("")}</ul>
      <p class="muted">Consent valid until ${esc(fmtDate(session.access.valid_until))}. You can close this tab and go back to Claude.</p>`,
     { kind: "ok", pill: "Connected" },
   );
