@@ -67,9 +67,10 @@ docker compose up -d
 ```
 
 Put a TLS terminator in front (Caddy needs two lines:
-`YOUR-HOST { reverse_proxy localhost:8080 }`). Platforms like Fly.io and
-Railway provide https themselves; give them the image from the
-[Dockerfile](Dockerfile), the variables above and a volume at `/data`.
+`YOUR-HOST { reverse_proxy localhost:8080 }`). On Railway: create a project from this GitHub repo (the Dockerfile and
+[railway.json](railway.json) are picked up automatically), add a volume
+mounted at `/data`, set the variables above, and generate a public domain.
+Fly.io works the same way with a volume and `fly secrets set`.
 
 Open `https://YOUR-HOST/`. It shows what is still missing, or the connector URL
 when everything is in place. `npm run check` does the same from a terminal and
