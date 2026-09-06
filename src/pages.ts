@@ -44,6 +44,10 @@ export function shell(title: string, body: string, opts: { kind?: Kind; pill?: s
   button{width:100%;margin-top:14px;font:inherit;font-weight:700;padding:13px 16px;border:0;border-radius:10px;background:var(--ink);color:var(--bg);cursor:pointer}
   button:hover{opacity:.92}
   code{font:13px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg);border:1px solid var(--line);padding:6px 10px;border-radius:8px;display:inline-block;word-break:break-all}
+  .copy{margin:14px 0 0}.copy p{margin:0 0 4px}
+  .copyrow{display:flex;gap:8px;align-items:flex-start}.copyrow code{flex:1}
+  .copybtn{width:auto;margin:0;padding:6px 10px;font-size:13px;font-weight:600;border-radius:8px;background:transparent;color:var(--ink);border:1px solid var(--line);white-space:nowrap}
+  .copybtn:hover{background:var(--bg);opacity:1}
   footer{margin-top:20px;font-size:12px;color:var(--muted)}
   footer a{color:inherit}
 </style>
@@ -110,7 +114,8 @@ export const CONSENT_DESCRIPTION = `${config.appName} lets you ask Claude about 
 export function setupPage(opts: { error?: string; values?: { app_id?: string; country?: string }; baseUrl?: string } = {}): string {
   const v = opts.values ?? {};
   const base = (opts.baseUrl ?? config.baseUrl).replace(/\/+$/, "");
-  const row = (label: string, value: string) => `<p class="muted" style="margin:14px 0 4px">${esc(label)}</p><code>${esc(value)}</code>`;
+  const row = (label: string, value: string) =>
+    `<div class="copy"><p class="muted">${esc(label)}</p><div class="copyrow"><code>${esc(value)}</code><button type="button" class="copybtn" data-copy="${esc(value)}">Copy</button></div></div>`;
   return shell(
     `Set up ${config.appName}`,
     `<p>First register an application at <a href="https://enablebanking.com/cp/applications" target="_blank" rel="noopener">Enable Banking</a>. Its form asks for these values:</p>
@@ -118,7 +123,7 @@ export function setupPage(opts: { error?: string; values?: { app_id?: string; co
      ${row("Application description", CONSENT_DESCRIPTION)}
      ${row("Privacy URL", `${base}/privacy`)}
      ${row("Terms URL", `${base}/terms`)}
-     <p class="muted" style="margin-top:14px">Environment: <b>Production</b> for your real accounts, <b>Sandbox</b> to try with test data. Keep <b>generate private key</b> selected; a <code style="padding:1px 6px">.pem</code> file downloads once when you save. That file and the application id shown after saving go here:</p>
+     <p class="muted" style="margin-top:18px">Environment: <b>Production</b> for your real accounts, <b>Sandbox</b> to try with test data. Keep <b>generate private key</b> selected; a <code style="padding:1px 6px">.pem</code> file downloads once when you save. That file and the application id shown after saving go here:</p>
      ${opts.error ? `<p class="error">${esc(opts.error)}</p>` : ""}
      <form method="post" action="/setup" id="setup">
        <label for="app_id">Application id</label>
@@ -135,6 +140,10 @@ export function setupPage(opts: { error?: string; values?: { app_id?: string; co
        <button type="submit">Finish setup</button>
      </form>
      <script>
+       for (const b of document.querySelectorAll(".copybtn")) b.addEventListener("click", async () => {
+         try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = "Copied"; setTimeout(() => (b.textContent = "Copy"), 1500); }
+         catch { b.textContent = "Select and copy"; }
+       });
        document.getElementById("pemfile").addEventListener("change", (e) => {
          const f = e.target.files[0]; if (!f) return;
          const r = new FileReader(); r.onload = () => { document.getElementById("pem").value = r.result; }; r.readAsText(f);
