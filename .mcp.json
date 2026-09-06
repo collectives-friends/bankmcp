@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "openbank": {
+    "openbanking": {
       "command": "node",
       "args": ["--env-file=.env", "src/stdio.ts"]
     }

@@ -25,7 +25,7 @@ test("password hashing round-trips", () => {
 });
 
 test("full authorization code flow with PKCE, refresh and revocation", async () => {
-  const store = new Store(join(mkdtempSync(join(tmpdir(), "openbank-")), "store.json"));
+  const store = new Store(join(mkdtempSync(join(tmpdir(), "openbanking-")), "store.json"));
   const provider = new SingleUserProvider(store);
   const client = await provider.clientsStore.registerClient!({ redirect_uris: ["https://claude.ai/api/mcp/auth_callback"], client_name: "Claude", token_endpoint_auth_method: "none" });
   assert.ok(client.client_id);
@@ -68,7 +68,7 @@ test("full authorization code flow with PKCE, refresh and revocation", async () 
 });
 
 test("five wrong passwords lock the address out", async () => {
-  const provider = new SingleUserProvider(new Store(join(mkdtempSync(join(tmpdir(), "openbank-")), "store.json")));
+  const provider = new SingleUserProvider(new Store(join(mkdtempSync(join(tmpdir(), "openbanking-")), "store.json")));
   const client = await provider.clientsStore.registerClient!({ redirect_uris: ["https://example.com/cb"] });
   for (let i = 0; i < 5; i++) {
     const { out, res } = fakeRes();

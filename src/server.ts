@@ -14,7 +14,7 @@ import { createServer, VERSION } from "./mcp.ts";
 import { startWatcher } from "./watcher.ts";
 import { daysLeft } from "./data.ts";
 
-const log = (msg: string, extra?: unknown) => console.log(`[openbank ${new Date().toISOString()}] ${msg}`, extra ?? "");
+const log = (msg: string, extra?: unknown) => console.log(`[openbanking ${new Date().toISOString()}] ${msg}`, extra ?? "");
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 const app = express();
@@ -33,7 +33,7 @@ app.get("/", (_req, res) => {
   const banks = s.sessions().map((x) => `<li>${esc(x.bank.name)} · ${s.accounts().filter((a) => a.session_id === x.id).length} account(s) · consent ${daysLeft(x.valid_until)} days left</li>`);
   res.type("html").send(
     page(
-      "openbank-mcp",
+      config.appName,
       problems.length
         ? `<p class="error">Not configured yet:</p><ul>${problems.map((p) => `<li>${esc(p)}</li>`).join("")}</ul><p class="muted">Set the environment variables and restart. See the README.</p>`
         : `<p>Running. Add this URL as a custom connector in Claude:</p><p><code>${esc(mcpUrl.href)}</code></p>
@@ -65,7 +65,7 @@ app.use(
     provider,
     issuerUrl: baseUrl,
     resourceServerUrl: mcpUrl,
-    resourceName: "openbank-mcp",
+    resourceName: "openbanking-mcp",
     scopesSupported: ["bank:read"],
     clientRegistrationOptions: { clientSecretExpirySeconds: 0 },
   }),

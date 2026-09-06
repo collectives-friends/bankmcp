@@ -1,8 +1,8 @@
-# openbank-mcp
+# openbanking-mcp
 
 Ask Claude about your own money.
 
-openbank-mcp is a small server you host yourself. It connects to your banks
+openbanking-mcp is a small server you host yourself. It connects to your banks
 through [Enable Banking](https://enablebanking.com), which wraps 2,700+
 European banks in one PSD2 API, and exposes them to Claude as an MCP
 connector. Read-only, no payments, no third party holding your data.
@@ -14,7 +14,7 @@ connector. Read-only, no payments, no third party holding your data.
 ## How it works
 
 ```
-Claude ──OAuth──▶ your openbank-mcp server ──JWT──▶ Enable Banking ──PSD2──▶ your bank
+Claude ──OAuth──▶ your openbanking-mcp server ──JWT──▶ Enable Banking ──PSD2──▶ your bank
 ```
 
 - **Claude** talks to your server as a custom connector. You sign in once with
@@ -87,7 +87,7 @@ is the only login you will do.
 In Claude Code:
 
 ```bash
-claude mcp add --transport http openbank https://YOUR-HOST/mcp
+claude mcp add --transport http openbanking https://YOUR-HOST/mcp
 ```
 
 then run `/mcp` inside Claude Code to sign in.
@@ -144,7 +144,7 @@ is polled. There is no way around that under PSD2.
 
 ## Claude Code plugin
 
-The repository is also a Claude Code plugin marketplace. The `openbank` plugin
+The repository is also a Claude Code plugin marketplace. The `openbanking` plugin
 bundles the connector entry and a skill that encodes how to work with the
 data: an account map, categorisation rules, the monthly review format and when
 to create watches.
@@ -157,13 +157,13 @@ export OPENBANK_URL=https://YOUR-HOST/mcp   # put this in your shell profile
 
 ```
 /plugin marketplace add noskillish/openbankingmcp
-/plugin install openbank@openbank
+/plugin install openbanking@openbanking
 ```
 
 Then `/mcp`, select `bank`, Authenticate, and enter your password. No
 organisation admin is involved; plugins are per user.
 
-The skill lives at [plugin/skills/openbank/SKILL.md](plugin/skills/openbank/SKILL.md).
+The skill lives at [plugin/skills/openbanking/SKILL.md](plugin/skills/openbanking/SKILL.md).
 Copy it into your own skills to fill in the account map and your merchant
 rules. The server stays generic; your rules stay yours.
 
@@ -224,7 +224,7 @@ src/store.ts          the JSON state file
 src/data.ts           shaping balances and transactions for an assistant
 src/stdio.ts          local stdio entry point
 src/cli.ts            check, hash-password, watch
-plugin/               Claude Code plugin with the openbank skill
+plugin/               Claude Code plugin with the openbanking skill
 ```
 
 ## License

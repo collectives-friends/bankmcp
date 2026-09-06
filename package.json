@@ -1,5 +1,5 @@
 {
-  "name": "openbank-mcp",
+  "name": "openbanking-mcp",
   "version": "0.1.0",
   "description": "Self-hosted MCP server that gives Claude read-only access to your own bank accounts via Enable Banking (PSD2)",
   "license": "MIT",
