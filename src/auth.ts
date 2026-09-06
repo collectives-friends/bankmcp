@@ -213,7 +213,7 @@ export function loginPage(opts: { requestId: string; clientName?: string; error?
 
 export function page(title: string, body: string): string {
   return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)} · ${esc(config.appName)}</title>
+<title>${esc(title === config.appName ? title : `${title} · ${config.appName}`)}</title>
 <style>
   body { font: 16px/1.5 system-ui, sans-serif; color: #1c1c1c; background: #f6f6f4; margin: 0; }
   main { max-width: 420px; margin: 12vh auto; padding: 32px; background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }

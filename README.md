@@ -81,7 +81,7 @@ also confirms the redirect URL is registered.
 ### 3. Add the connector in Claude
 
 In claude.ai (or the desktop app): **Settings → Connectors → Add custom
-connector**. Name it, paste `https://YOUR-HOST/mcp`, save, then click
+connector**. Name it `Bank™`, paste `https://YOUR-HOST/mcp`, save, then click
 **Connect**. Your server shows a password page; enter the admin password. That
 is the only login you will do.
 
