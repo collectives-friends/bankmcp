@@ -69,15 +69,15 @@ test("full authorization code flow with PKCE, refresh and revocation", async () 
 
 test("five wrong passwords lock the address out", async () => {
   const provider = new SingleUserProvider(new Store(join(mkdtempSync(join(tmpdir(), "bank-")), "store.json")));
-  const client = await provider.clientsStore.registerClient!({ redirect_uris: ["https://example.com/cb"] });
+  const client = await provider.clientsStore.registerClient!({ redirect_uris: ["https://claude.ai/cb"] });
   for (let i = 0; i < 5; i++) {
     const { out, res } = fakeRes();
-    await provider.authorize(client, { codeChallenge: "c", redirectUri: "https://example.com/cb" }, res);
+    await provider.authorize(client, { codeChallenge: "c", redirectUri: "https://claude.ai/cb" }, res);
     const id = /name="request" value="([^"]+)"/.exec(out.body)![1]!;
     provider.completeLogin(id, "wrong", "9.9.9.9");
   }
   const { out, res } = fakeRes();
-  await provider.authorize(client, { codeChallenge: "c", redirectUri: "https://example.com/cb" }, res);
+  await provider.authorize(client, { codeChallenge: "c", redirectUri: "https://claude.ai/cb" }, res);
   const id = /name="request" value="([^"]+)"/.exec(out.body)![1]!;
   const r = provider.completeLogin(id, "correct horse", "9.9.9.9");
   assert.ok("error" in r && /Too many/.test(r.error));
@@ -87,14 +87,14 @@ test("revokeAll drops every token", async () => {
   const store = new Store(join(mkdtempSync(join(tmpdir(), "bank-")), "store.json"));
   const events: unknown[] = [];
   const provider = new SingleUserProvider(store, { onLogin: (e) => events.push(e) });
-  const client = await provider.clientsStore.registerClient!({ redirect_uris: ["https://example.com/cb"], client_name: "Claude" });
+  const client = await provider.clientsStore.registerClient!({ redirect_uris: ["https://claude.ai/cb"], client_name: "Claude" });
   const { out, res } = fakeRes();
-  await provider.authorize(client, { codeChallenge: "c", redirectUri: "https://example.com/cb" }, res);
+  await provider.authorize(client, { codeChallenge: "c", redirectUri: "https://claude.ai/cb" }, res);
   const id = /name="request" value="([^"]+)"/.exec(out.body)![1]!;
   const ok = provider.completeLogin(id, "correct horse", "5.5.5.5");
   assert.ok("redirect" in ok);
   assert.deepEqual(events, [{ ok: true, ip: "5.5.5.5", clientName: "Claude" }]);
-  const tokens = await provider.exchangeAuthorizationCode(client, new URL(ok.redirect).searchParams.get("code")!, undefined, "https://example.com/cb");
+  const tokens = await provider.exchangeAuthorizationCode(client, new URL(ok.redirect).searchParams.get("code")!, undefined, "https://claude.ai/cb");
   await provider.verifyAccessToken(tokens.access_token);
   provider.revokeAll();
   await assert.rejects(provider.verifyAccessToken(tokens.access_token), /Invalid/);
