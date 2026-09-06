@@ -128,10 +128,15 @@ export class Store {
   }
 
   save(): void {
-    mkdirSync(join(this.path, ".."), { recursive: true });
-    const tmp = `${this.path}.tmp`;
-    writeFileSync(tmp, JSON.stringify(this.data, null, 2), { mode: 0o600 });
-    renameSync(tmp, this.path);
+    try {
+      mkdirSync(join(this.path, ".."), { recursive: true });
+      const tmp = `${this.path}.tmp`;
+      writeFileSync(tmp, JSON.stringify(this.data, null, 2), { mode: 0o600 });
+      renameSync(tmp, this.path);
+    } catch (err) {
+      console.error(`[openbank] cannot write state file ${this.path}: ${(err as Error).message}`);
+      throw err;
+    }
   }
 
   /** Mutate under a callback and persist once. */

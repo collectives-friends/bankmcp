@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { accessSync, constants, existsSync, mkdirSync, readFileSync } from "node:fs";
 
 const port = Number(process.env.PORT ?? 8080);
 
@@ -47,6 +47,12 @@ export function setupProblems(): string[] {
   }
   if (!config.adminPasswordHash && !config.adminPassword) problems.push("Set ADMIN_PASSWORD_HASH (run `npm run hash-password`) or ADMIN_PASSWORD");
   if (!/^https?:\/\//.test(config.baseUrl)) problems.push("BASE_URL must start with http:// or https://");
+  try {
+    mkdirSync(config.dataDir, { recursive: true });
+    accessSync(config.dataDir, constants.W_OK);
+  } catch {
+    problems.push(`DATA_DIR  is not writable by this process (check volume permissions)`);
+  }
   return problems;
 }
 
