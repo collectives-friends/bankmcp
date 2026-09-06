@@ -82,3 +82,21 @@ test("five wrong passwords lock the address out", async () => {
   const r = provider.completeLogin(id, "correct horse", "9.9.9.9");
   assert.ok("error" in r && /Too many/.test(r.error));
 });
+
+test("revokeAll drops every token", async () => {
+  const store = new Store(join(mkdtempSync(join(tmpdir(), "bank-")), "store.json"));
+  const events: unknown[] = [];
+  const provider = new SingleUserProvider(store, { onLogin: (e) => events.push(e) });
+  const client = await provider.clientsStore.registerClient!({ redirect_uris: ["https://example.com/cb"], client_name: "Claude" });
+  const { out, res } = fakeRes();
+  await provider.authorize(client, { codeChallenge: "c", redirectUri: "https://example.com/cb" }, res);
+  const id = /name="request" value="([^"]+)"/.exec(out.body)![1]!;
+  const ok = provider.completeLogin(id, "correct horse", "5.5.5.5");
+  assert.ok("redirect" in ok);
+  assert.deepEqual(events, [{ ok: true, ip: "5.5.5.5", clientName: "Claude" }]);
+  const tokens = await provider.exchangeAuthorizationCode(client, new URL(ok.redirect).searchParams.get("code")!, undefined, "https://example.com/cb");
+  await provider.verifyAccessToken(tokens.access_token);
+  provider.revokeAll();
+  await assert.rejects(provider.verifyAccessToken(tokens.access_token), /Invalid/);
+  await assert.rejects(provider.exchangeRefreshToken(client, tokens.refresh_token!), /Invalid/);
+});

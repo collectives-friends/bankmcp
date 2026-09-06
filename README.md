@@ -199,6 +199,11 @@ register `https://localhost:8080/callback` as a redirect URL.
   OAuth tokens. Back it up if you care about not re-consenting; delete it to
   forget everything.
 - Anyone with the admin password can read your accounts. Use a long one.
+  Every successful sign-in is logged and, if `NOTIFY_WEBHOOK_URL` is set,
+  sent to you as a message. A sign-in you did not make is your alarm.
+- Changing `ADMIN_PASSWORD_HASH` (or `ADMIN_PASSWORD`) and restarting logs
+  every client out. That is the kill switch. Revoking the consents at your
+  bank, or deleting the state file, is the step beyond it.
 - There are no payment tools and none will be added. Payments need a
   licensed PISP and a very different security model.
 

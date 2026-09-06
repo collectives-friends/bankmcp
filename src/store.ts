@@ -102,6 +102,8 @@ export interface StoreData {
     codes: Record<string, AuthCode>;
     /** Keyed by sha256 of the token value. */
     tokens: Record<string, Token>;
+    /** Fingerprint of the admin password the tokens were issued under. */
+    password_fingerprint?: string;
   };
 }
 

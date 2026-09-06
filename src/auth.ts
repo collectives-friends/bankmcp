@@ -56,14 +56,31 @@ interface PendingLogin {
   attempts: number;
 }
 
+export interface LoginEvent {
+  ok: boolean;
+  ip: string;
+  clientName?: string;
+  reason?: string;
+}
+
 export class SingleUserProvider implements OAuthServerProvider {
   private pendingLogins = new Map<string, PendingLogin>();
   private failures = new Map<string, { count: number; until: number }>();
-
   private store: Store;
+  private onLogin?: (e: LoginEvent) => void;
 
-  constructor(store: Store) {
+  constructor(store: Store, opts: { onLogin?: (e: LoginEvent) => void } = {}) {
     this.store = store;
+    this.onLogin = opts.onLogin;
+  }
+
+  /** Every token and pending code is dropped. Used when the admin password changes. */
+  revokeAll(): void {
+    this.pendingLogins.clear();
+    this.store.update((d) => {
+      d.oauth.tokens = {};
+      d.oauth.codes = {};
+    });
   }
 
   get clientsStore(): OAuthRegisteredClientsStore {
@@ -102,7 +119,10 @@ export class SingleUserProvider implements OAuthServerProvider {
   completeLogin(requestId: string, password: string, ip: string): { redirect: string } | { error: string; requestId?: string } {
     this.sweep();
     const lock = this.failures.get(ip);
-    if (lock && lock.until > now()) return { error: "Too many attempts. Try again in a few minutes." };
+    if (lock && lock.until > now()) {
+      this.onLogin?.({ ok: false, ip, reason: "locked out" });
+      return { error: "Too many attempts. Try again in a few minutes." };
+    }
 
     const pending = this.pendingLogins.get(requestId);
     if (!pending) return { error: "This login link has expired. Go back to Claude and connect again." };
@@ -114,11 +134,13 @@ export class SingleUserProvider implements OAuthServerProvider {
       if (f.count >= 5) f.until = now() + 15 * 60;
       this.failures.set(ip, f);
       if (pending.attempts >= 5) this.pendingLogins.delete(requestId);
+      this.onLogin?.({ ok: false, ip, clientName: pending.client.client_name, reason: "wrong password" });
       return { error: "Wrong password.", requestId: pending.attempts < 5 ? requestId : undefined };
     }
 
     this.pendingLogins.delete(requestId);
     this.failures.delete(ip);
+    this.onLogin?.({ ok: true, ip, clientName: pending.client.client_name });
     const code = token();
     this.store.update((d) => {
       for (const [c, v] of Object.entries(d.oauth.codes)) if (v.expires < now()) delete d.oauth.codes[c];

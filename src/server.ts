@@ -1,5 +1,6 @@
 // HTTP entry point: the MCP endpoint behind OAuth, the OAuth server itself,
 // the Enable Banking redirect target, and a status page.
+import { createHash } from "node:crypto";
 import { createServer as createHttpsServer } from "node:https";
 import { createServer as createHttpServer } from "node:http";
 import express from "express";
@@ -22,7 +23,37 @@ app.disable("x-powered-by");
 
 const baseUrl = new URL(config.baseUrl);
 const mcpUrl = new URL("/mcp", baseUrl);
-const provider = new SingleUserProvider(store());
+const provider = new SingleUserProvider(store(), {
+  onLogin: (e) => {
+    const who = e.clientName ? ` for ${e.clientName}` : "";
+    if (e.ok) {
+      log(`sign-in from ${e.ip}${who}`);
+      notify(`${config.appName}: new sign-in from ${e.ip}${who}. If this was not you, change ADMIN_PASSWORD now; that logs every client out.`);
+    } else {
+      log(`failed sign-in from ${e.ip}${who} (${e.reason})`);
+    }
+  },
+});
+
+// Changing the admin password logs every client out.
+{
+  const fingerprint = createHash("sha256").update(config.adminPasswordHash || config.adminPassword).digest("hex");
+  if (store().data.oauth.password_fingerprint && store().data.oauth.password_fingerprint !== fingerprint) {
+    provider.revokeAll();
+    log("admin password changed: all tokens revoked");
+  }
+  if (store().data.oauth.password_fingerprint !== fingerprint) store().update((d) => void (d.oauth.password_fingerprint = fingerprint));
+}
+
+function notify(text: string): void {
+  if (!config.notifyWebhookUrl) return;
+  const slack = /hooks\.slack\.com/.test(config.notifyWebhookUrl);
+  fetch(config.notifyWebhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(slack ? { text } : { source: config.appName, type: "sign_in", text }),
+  }).catch((err) => log("notify failed", (err as Error).message));
+}
 
 // --- Status page, health, legal ---
 
