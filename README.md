@@ -54,6 +54,7 @@ Any container host works. Set these environment variables:
 | `BASE_URL` | `https://YOUR-HOST` |
 | `ADMIN_PASSWORD_HASH` | output of `npm run hash-password` (or set `ADMIN_PASSWORD`) |
 | `DEFAULT_COUNTRY` | your country code, e.g. `DK` |
+| `APP_NAME` | optional, the name shown on the sign-in and status pages |
 
 and mount a volume at `/data`. Optional: `NOTIFY_WEBHOOK_URL` for watch
 notifications (a Slack incoming webhook works). Full list in

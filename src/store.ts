@@ -2,7 +2,7 @@
 // and the OAuth clients/tokens for the MCP connector. One JSON file, written
 // atomically. Transactions and balances are never stored.
 import { mkdirSync, readFileSync, renameSync, writeFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { config } from "./config.ts";
 
 export interface StoredSession {
@@ -118,9 +118,12 @@ export class Store {
   readonly path: string;
   data: StoreData;
 
-  constructor(path = join(config.dataDir, "openbank.json")) {
+  constructor(path = join(config.dataDir, "openbanking.json")) {
     this.path = path;
     this.data = empty();
+    // The file was called openbank.json before the project was renamed.
+    const legacy = join(dirname(path), "openbank.json");
+    if (!existsSync(path) && existsSync(legacy)) renameSync(legacy, path);
     if (existsSync(path)) {
       const parsed = JSON.parse(readFileSync(path, "utf8")) as Partial<StoreData>;
       this.data = { ...empty(), ...parsed, oauth: { ...empty().oauth, ...(parsed.oauth ?? {}) } };

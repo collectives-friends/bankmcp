@@ -11,6 +11,7 @@ export const config = {
   port,
   baseUrl: (process.env.BASE_URL ?? `http://localhost:${port}`).replace(/\/+$/, ""),
   dataDir: process.env.DATA_DIR ?? "./data",
+  appName: process.env.APP_NAME ?? "openbanking-mcp",
   adminPasswordHash: process.env.ADMIN_PASSWORD_HASH ?? "",
   adminPassword: process.env.ADMIN_PASSWORD ?? "",
   notifyWebhookUrl: process.env.NOTIFY_WEBHOOK_URL ?? "",
