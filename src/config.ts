@@ -51,7 +51,7 @@ export function setupProblems(): string[] {
     mkdirSync(config.dataDir, { recursive: true });
     accessSync(config.dataDir, constants.W_OK);
   } catch {
-    problems.push(`DATA_DIR  is not writable by this process (check volume permissions)`);
+    problems.push(`DATA_DIR ${config.dataDir} is not writable by this process (check volume permissions)`);
   }
   return problems;
 }
