@@ -90,6 +90,10 @@ export function failedPage(message: string): string {
   return shell("Bank not connected", `<p class="error">${esc(message)}</p><p class="muted">Go back to Claude and start again.</p>`, { kind: "error", pill: "Not connected" });
 }
 
+export function signInFailedPage(message: string): string {
+  return shell("Sign-in failed", `<p class="error">${esc(message)}</p>`, { kind: "error", pill: "Not signed in" });
+}
+
 export function statusPage(input: { problems: string[]; mcpUrl: string; callbackUrl: string }): string {
   if (input.problems.length) {
     return shell(

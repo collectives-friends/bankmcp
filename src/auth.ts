@@ -17,7 +17,7 @@ import type { Store, OAuthClient } from "./store.ts";
 const ACCESS_TTL = 60 * 60; // 1 hour
 const REFRESH_TTL = 90 * 24 * 60 * 60; // 90 days
 const CODE_TTL = 10 * 60;
-const LOGIN_TTL = 10 * 60;
+const LOGIN_TTL = 30 * 60;
 
 // --- Password ---
 
@@ -137,7 +137,7 @@ export class SingleUserProvider implements OAuthServerProvider {
     }
 
     const pending = this.pendingLogins.get(requestId);
-    if (!pending) return { error: "This login link has expired. Go back to Claude and connect again." };
+    if (!pending) return { error: "This sign-in page has expired or the server restarted. Go back to Claude, click Connect again, and enter the password within 30 minutes." };
 
     if (!verifyPassword(password)) {
       pending.attempts += 1;

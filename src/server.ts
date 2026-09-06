@@ -11,7 +11,7 @@ import { config, isConfigured, setupProblems, tlsOptions } from "./config.ts";
 import { eb, EnableBankingError } from "./enablebanking.ts";
 import { store } from "./store.ts";
 import { SingleUserProvider } from "./auth.ts";
-import { connectedPage, failedPage, loginPage, privacyPage, setupPage, statusPage, termsPage } from "./pages.ts";
+import { connectedPage, failedPage, loginPage, privacyPage, setupPage, signInFailedPage, statusPage, termsPage } from "./pages.ts";
 import { applySetup, setupAvailable } from "./setup.ts";
 import { createServer, VERSION } from "./mcp.ts";
 import { startWatcher } from "./watcher.ts";
@@ -120,7 +120,7 @@ app.post("/login", express.urlencoded({ extended: false }), (req, res) => {
   const result = provider.completeLogin(String(request ?? ""), String(password ?? ""), req.ip ?? "unknown");
   if ("redirect" in result) return void res.redirect(302, result.redirect);
   if (result.requestId) return void res.status(401).type("html").send(loginPage({ requestId: result.requestId, error: result.error }));
-  res.status(400).type("html").send(failedPage(result.error));
+  res.status(400).type("html").send(signInFailedPage(result.error));
 });
 
 // --- MCP endpoint (stateless: one transport per request) ---
