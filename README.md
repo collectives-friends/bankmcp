@@ -1,6 +1,6 @@
 # Bank™
 
-**Read-only access to your own bank accounts, for Claude.**
+**Your bank, in Claude.** Read-only, self-hosted, one user.
 
 Bank™ is not a bank. It is a small open-source server you host yourself
 (package name `bank-mcp`). It connects to your banks
@@ -43,12 +43,12 @@ At <https://enablebanking.com/cp/applications> create an application:
   the server serves both. The description is shown on the consent screen every
   time you connect a bank, so make it honest and short. A starting point:
 
-  > Bank™ is open-source software I run on my own server so I can ask Claude,
-  > an AI assistant, about my own bank accounts. It reads balances and
-  > transactions only when I ask a question, and passes them to Claude for that
-  > answer. It cannot make payments, stores nothing beyond this consent, and
-  > has one user: me. I can withdraw access at any time at my bank or by
-  > deleting the server. Personal, non-commercial use.
+  > Bank™ is open-source software the account holder runs on their own server
+  > to ask Claude, an AI assistant, about their own bank accounts. It reads
+  > balances and transactions only when asked, and passes them to Claude for
+  > that answer. It cannot make payments, stores nothing beyond this consent,
+  > and has a single user, the account holder, who can withdraw access at any
+  > time at the bank or by deleting the server. Personal, non-commercial use.
 
 Note the application id (a UUID) shown after saving.
 
