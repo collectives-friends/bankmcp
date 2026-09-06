@@ -40,7 +40,15 @@ At <https://enablebanking.com/cp/applications> create an application:
 - Redirect URL: `https://YOUR-HOST/callback`.
 - Production asks for a description, a data-protection email and privacy and
   terms URLs. Use `https://YOUR-HOST/privacy` and `https://YOUR-HOST/terms`;
-  the server serves both.
+  the server serves both. The description is shown on the consent screen every
+  time you connect a bank, so make it honest and short. A starting point:
+
+  > Bank™ is open-source software I run on my own server so I can ask Claude,
+  > an AI assistant, about my own bank accounts. It reads balances and
+  > transactions only when I ask a question, and passes them to Claude for that
+  > answer. It cannot make payments, stores nothing beyond this consent, and
+  > has one user: me. I can withdraw access at any time at my bank or by
+  > deleting the server. Personal, non-commercial use.
 
 Note the application id (a UUID) shown after saving.
 
