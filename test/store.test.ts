@@ -14,7 +14,7 @@ const session = (id: string, uid: string, hash: string) => ({
 });
 
 test("re-consent replaces the account uid but keeps label and watches", () => {
-  const dir = mkdtempSync(join(tmpdir(), "openbanking-"));
+  const dir = mkdtempSync(join(tmpdir(), "bank-"));
   const s = new Store(join(dir, "store.json"));
   s.addSession(session("s1", "u1", "h1"));
   s.update((d) => void (d.accounts["u1"]!.label = "Main"));
@@ -32,7 +32,7 @@ test("re-consent replaces the account uid but keeps label and watches", () => {
 });
 
 test("pending auth is single use", () => {
-  const s = new Store(join(mkdtempSync(join(tmpdir(), "openbanking-")), "store.json"));
+  const s = new Store(join(mkdtempSync(join(tmpdir(), "bank-")), "store.json"));
   s.addPendingAuth({ state: "st", bank: { name: "B", country: "DK" }, started: new Date().toISOString() });
   assert.equal(s.takePendingAuth("st")?.bank.name, "B");
   assert.equal(s.takePendingAuth("st"), undefined);

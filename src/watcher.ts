@@ -154,7 +154,7 @@ async function checkAccount(account: StoredAccount, watches: Watch[]): Promise<W
 
 async function notify(url: string, event: WatchEvent): Promise<void> {
   const slack = /hooks\.slack\.com/.test(url);
-  const body = slack ? { text: event.text } : { source: "openbanking-mcp", ...event };
+  const body = slack ? { text: event.text } : { source: "bank-mcp", ...event };
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error(`webhook ${res.status}`);
 }

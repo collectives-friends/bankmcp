@@ -1,7 +1,7 @@
 services:
-  openbanking:
+  bank:
     build: .
-    image: openbanking-mcp
+    image: bank-mcp
     restart: unless-stopped
     env_file: .env
     environment:
@@ -10,9 +10,9 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - openbanking-data:/data
+      - bank-data:/data
       # If you use EB_PRIVATE_KEY_PATH instead of EB_PRIVATE_KEY, mount the key:
       # - ./secrets/enablebanking.pem:/run/secrets/enablebanking.pem:ro
 
 volumes:
-  openbanking-data:
+  bank-data:

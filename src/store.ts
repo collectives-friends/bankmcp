@@ -118,12 +118,14 @@ export class Store {
   readonly path: string;
   data: StoreData;
 
-  constructor(path = join(config.dataDir, "openbanking.json")) {
+  constructor(path = join(config.dataDir, "bank.json")) {
     this.path = path;
     this.data = empty();
-    // The file was called openbank.json before the project was renamed.
-    const legacy = join(dirname(path), "openbank.json");
-    if (!existsSync(path) && existsSync(legacy)) renameSync(legacy, path);
+    // Earlier versions named the file openbank.json or openbanking.json.
+    for (const old of ["openbanking.json", "openbank.json"]) {
+      const legacy = join(dirname(path), old);
+      if (!existsSync(path) && existsSync(legacy)) renameSync(legacy, path);
+    }
     if (existsSync(path)) {
       const parsed = JSON.parse(readFileSync(path, "utf8")) as Partial<StoreData>;
       this.data = { ...empty(), ...parsed, oauth: { ...empty().oauth, ...(parsed.oauth ?? {}) } };
@@ -137,7 +139,7 @@ export class Store {
       writeFileSync(tmp, JSON.stringify(this.data, null, 2), { mode: 0o600 });
       renameSync(tmp, this.path);
     } catch (err) {
-      console.error(`[openbanking] cannot write state file ${this.path}: ${(err as Error).message}`);
+      console.error(`[bank] cannot write state file ${this.path}: ${(err as Error).message}`);
       throw err;
     }
   }

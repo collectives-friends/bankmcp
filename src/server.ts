@@ -9,13 +9,13 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { config, isConfigured, setupProblems, tlsOptions } from "./config.ts";
 import { eb, EnableBankingError } from "./enablebanking.ts";
 import { store } from "./store.ts";
-import { SingleUserProvider, loginPage, page } from "./auth.ts";
+import { SingleUserProvider } from "./auth.ts";
+import { connectedPage, failedPage, loginPage, privacyPage, shell as page, statusPage, termsPage } from "./pages.ts";
 import { createServer, VERSION } from "./mcp.ts";
 import { startWatcher } from "./watcher.ts";
 import { daysLeft } from "./data.ts";
 
-const log = (msg: string, extra?: unknown) => console.log(`[openbanking ${new Date().toISOString()}] ${msg}`, extra ?? "");
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+const log = (msg: string, extra?: unknown) => console.log(`[bank ${new Date().toISOString()}] ${msg}`, extra ?? "");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -28,35 +28,20 @@ const provider = new SingleUserProvider(store());
 // --- Status page, health, legal ---
 
 app.get("/", (_req, res) => {
-  const problems = setupProblems();
   const s = store();
-  const banks = s.sessions().map((x) => `<li>${esc(x.bank.name)} · ${s.accounts().filter((a) => a.session_id === x.id).length} account(s) · consent ${daysLeft(x.valid_until)} days left</li>`);
   res.type("html").send(
-    page(
-      config.appName,
-      problems.length
-        ? `<p class="error">Not configured yet:</p><ul>${problems.map((p) => `<li>${esc(p)}</li>`).join("")}</ul><p class="muted">Set the environment variables and restart. See the README.</p>`
-        : `<p>Running. Add this URL as a custom connector in Claude:</p><p><code>${esc(mcpUrl.href)}</code></p>
-           <p class="muted">${banks.length ? `Connected banks:<ul>${banks.join("")}</ul>` : "No bank connected yet. In Claude, say “connect my bank”."}</p>`,
-    ),
+    statusPage({
+      problems: setupProblems(),
+      mcpUrl: mcpUrl.href,
+      banks: s.sessions().map((x) => ({ name: x.bank.name, accounts: s.accounts().filter((a) => a.session_id === x.id).length, daysLeft: daysLeft(x.valid_until) })),
+    }),
   );
 });
 
 app.get("/healthz", (_req, res) => void res.json({ ok: true, version: VERSION, configured: isConfigured() }));
 
-app.get("/privacy", (_req, res) =>
-  void res.type("html").send(
-    page(
-      "Privacy",
-      `<p>This server is operated by its owner to access the owner's own bank accounts. It is not offered as a service to anyone else.</p>
-       <p>Account identifiers and consent references from Enable Banking are stored on the server so the owner's assistant can fetch balances and transactions on request. Transactions and balances themselves are not stored. No data is shared with third parties and nothing is collected about visitors.</p>`,
-    ),
-  ),
-);
-
-app.get("/terms", (_req, res) =>
-  void res.type("html").send(page("Terms", `<p>Personal software run by its owner for their own non-commercial use, under Enable Banking's terms for individual use of their production environment.</p>`)),
-);
+app.get("/privacy", (_req, res) => void res.type("html").send(privacyPage()));
+app.get("/terms", (_req, res) => void res.type("html").send(termsPage()));
 
 // --- OAuth server for the MCP connector (single user) ---
 
@@ -65,7 +50,7 @@ app.use(
     provider,
     issuerUrl: baseUrl,
     resourceServerUrl: mcpUrl,
-    resourceName: "openbanking-mcp",
+    resourceName: "bank-mcp",
     scopesSupported: ["bank:read"],
     clientRegistrationOptions: { clientSecretExpirySeconds: 0 },
   }),
@@ -76,7 +61,7 @@ app.post("/login", express.urlencoded({ extended: false }), (req, res) => {
   const result = provider.completeLogin(String(request ?? ""), String(password ?? ""), req.ip ?? "unknown");
   if ("redirect" in result) return void res.redirect(302, result.redirect);
   if (result.requestId) return void res.status(401).type("html").send(loginPage({ requestId: result.requestId, error: result.error }));
-  res.status(400).type("html").send(page("Sign in", `<p class="error">${esc(result.error)}</p>`));
+  res.status(400).type("html").send(failedPage(result.error));
 });
 
 // --- MCP endpoint (stateless: one transport per request) ---
@@ -107,7 +92,7 @@ app.delete("/mcp", bearer, (_req, res) => void res.status(405).set("Allow", "POS
 app.get("/callback", async (req, res) => {
   const { code, state, error, error_description } = req.query as Record<string, string | undefined>;
   const pending = state ? store().takePendingAuth(state) : undefined;
-  const failed = (msg: string) => res.status(400).type("html").send(page("Bank not connected", `<p class="error">${esc(msg)}</p><p class="muted">Go back to Claude and try again.</p>`));
+  const failed = (msg: string) => res.status(400).type("html").send(failedPage(msg));
 
   if (error || !code) return void failed(error_description || error || "The bank did not return an authorization code.");
   if (!pending) return void failed("Unknown or expired authorization. Start again from Claude.");
@@ -116,14 +101,7 @@ app.get("/callback", async (req, res) => {
     const session = await eb.createSession(code);
     store().addSession(session);
     log(`bank connected: ${session.aspsp.name}, ${session.accounts.length} account(s)`);
-    res.type("html").send(
-      page(
-        "Bank connected",
-        `<p><b>${esc(session.aspsp.name)}</b> is linked with ${session.accounts.length} account${session.accounts.length === 1 ? "" : "s"}.</p>
-         <ul>${session.accounts.map((a) => `<li>${esc(a.name ?? a.product ?? a.uid)} · ${esc(a.currency)}</li>`).join("")}</ul>
-         <p class="muted">Consent valid until ${esc(session.access.valid_until.slice(0, 10))}. You can close this tab and go back to Claude.</p>`,
-      ),
-    );
+    res.type("html").send(connectedPage(session));
   } catch (err) {
     const msg = err instanceof EnableBankingError ? `Enable Banking returned ${err.status}: ${err.body.slice(0, 300)}` : (err as Error).message;
     log("callback failed", msg);

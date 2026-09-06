@@ -3,7 +3,7 @@
 **Read-only access to your own bank accounts, for Claude.**
 
 Bank™ is not a bank. It is a small open-source server you host yourself
-(package name `openbanking-mcp`). It connects to your banks
+(package name `bank-mcp`). It connects to your banks
 through [Enable Banking](https://enablebanking.com), which wraps 2,700+
 European banks in one PSD2 API, and exposes them to Claude as an MCP
 connector. Read-only, no payments, no third party holding your data.
@@ -88,7 +88,7 @@ is the only login you will do.
 In Claude Code:
 
 ```bash
-claude mcp add --transport http openbanking https://YOUR-HOST/mcp
+claude mcp add --transport http bank https://YOUR-HOST/mcp
 ```
 
 then run `/mcp` inside Claude Code to sign in.
@@ -145,7 +145,7 @@ is polled. There is no way around that under PSD2.
 
 ## Claude Code plugin
 
-The repository is also a Claude Code plugin marketplace. The `openbanking` plugin
+The repository is also a Claude Code plugin marketplace. The `bank` plugin
 bundles the connector entry and a skill that encodes how to work with the
 data: an account map, categorisation rules, the monthly review format and when
 to create watches.
@@ -158,13 +158,13 @@ export OPENBANK_URL=https://YOUR-HOST/mcp   # put this in your shell profile
 
 ```
 /plugin marketplace add noskillish/bank-mcp
-/plugin install openbanking@openbanking
+/plugin install bank@bank
 ```
 
 Then `/mcp`, select `bank`, Authenticate, and enter your password. No
 organisation admin is involved; plugins are per user.
 
-The skill lives at [plugin/skills/openbanking/SKILL.md](plugin/skills/openbanking/SKILL.md).
+The skill lives at [plugin/skills/bank/SKILL.md](plugin/skills/bank/SKILL.md).
 Copy it into your own skills to fill in the account map and your merchant
 rules. The server stays generic; your rules stay yours.
 
@@ -225,7 +225,7 @@ src/store.ts          the JSON state file
 src/data.ts           shaping balances and transactions for an assistant
 src/stdio.ts          local stdio entry point
 src/cli.ts            check, hash-password, watch
-plugin/               Claude Code plugin with the openbanking skill
+plugin/               Claude Code plugin with the bank skill
 ```
 
 ## License

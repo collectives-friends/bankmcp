@@ -10,6 +10,8 @@ import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import type { OAuthClientInformationFull, OAuthTokenRevocationRequest, OAuthTokens } from "@modelcontextprotocol/sdk/shared/auth.js";
 import { InvalidGrantError, InvalidClientError } from "@modelcontextprotocol/sdk/server/auth/errors.js";
 import { config } from "./config.ts";
+import { loginPage } from "./pages.ts";
+export { loginPage, shell as page } from "./pages.ts";
 import type { Store, OAuthClient } from "./store.ts";
 
 const ACCESS_TTL = 60 * 60; // 1 hour
@@ -192,38 +194,4 @@ export class SingleUserProvider implements OAuthServerProvider {
     for (const [k, v] of this.pendingLogins) if (v.expires < t) this.pendingLogins.delete(k);
     for (const [k, v] of this.failures) if (v.until && v.until < t) this.failures.delete(k);
   }
-}
-
-// --- Login page ---
-
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
-
-export function loginPage(opts: { requestId: string; clientName?: string; error?: string }): string {
-  return page(
-    "Sign in",
-    `<p class="muted">${opts.clientName ? `<b>${esc(opts.clientName)}</b> wants` : "An app wants"} read-only access to your bank accounts through this server.</p>
-     ${opts.error ? `<p class="error">${esc(opts.error)}</p>` : ""}
-     <form method="post" action="/login">
-       <input type="hidden" name="request" value="${esc(opts.requestId)}">
-       <label>Password<br><input type="password" name="password" autofocus autocomplete="current-password" required></label>
-       <button type="submit">Allow access</button>
-     </form>`,
-  );
-}
-
-export function page(title: string, body: string): string {
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title === config.appName ? title : `${title} · ${config.appName}`)}</title>
-<style>
-  body { font: 16px/1.5 system-ui, sans-serif; color: #1c1c1c; background: #f6f6f4; margin: 0; }
-  main { max-width: 420px; margin: 12vh auto; padding: 32px; background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-  h1 { font-size: 22px; margin: 0 0 8px; }
-  .muted { color: #555; } .error { color: #b3261e; }
-  label { display: block; margin: 16px 0 8px; font-weight: 500; }
-  input[type=password] { width: 100%; box-sizing: border-box; font: inherit; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; margin-top: 6px; }
-  button { font: inherit; font-weight: 600; padding: 10px 16px; border: 0; border-radius: 8px; background: #1c1c1c; color: #fff; cursor: pointer; width: 100%; margin-top: 8px; }
-  small { color: #777; display: block; margin-top: 20px; }
-  code { background: #f0f0ee; padding: 2px 6px; border-radius: 4px; }
-</style>
-<main><h1>${esc(title)}</h1>${body}<small>${esc(config.appName)} · read-only · self-hosted</small></main></html>`;
 }

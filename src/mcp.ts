@@ -6,7 +6,7 @@ export const VERSION = "0.1.0";
 
 export function createServer(): McpServer {
   const server = new McpServer(
-    { name: "openbanking", version: VERSION },
+    { name: "bank", version: VERSION },
     {
       instructions: [
         "Read-only access to the owner's own bank accounts via Enable Banking (PSD2). There are no payment tools.",

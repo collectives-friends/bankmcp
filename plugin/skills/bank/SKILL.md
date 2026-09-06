@@ -1,11 +1,11 @@
 ---
-name: openbanking
-description: Answer questions about the user's own bank accounts and money using the openbanking MCP tools (list_accounts, get_balances, get_transactions, watches). Use whenever the user asks about balances, spending, income, subscriptions, whether a payment arrived, or wants a monthly review. Encodes the account map and categorisation rules so answers are consistent.
+name: bank
+description: Answer questions about the user's own bank accounts and money using the bank MCP tools (list_accounts, get_balances, get_transactions, watches). Use whenever the user asks about balances, spending, income, subscriptions, whether a payment arrived, or wants a monthly review. Encodes the account map and categorisation rules so answers are consistent.
 ---
 
-# openbanking
+# bank
 
-You have read-only access to the user's own bank accounts through the `openbanking` MCP server. There are no payment tools and there never will be.
+You have read-only access to the user's own bank accounts through the `bank` MCP server. There are no payment tools and there never will be.
 
 ## Ground rules
 
