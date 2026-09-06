@@ -1,8 +1,9 @@
-# openbanking-mcp
+# Bank™
 
-Ask Claude about your own money.
+**Read-only access to your own bank accounts, for Claude.**
 
-openbanking-mcp is a small server you host yourself. It connects to your banks
+Bank™ is not a bank. It is a small open-source server you host yourself
+(package name `openbanking-mcp`). It connects to your banks
 through [Enable Banking](https://enablebanking.com), which wraps 2,700+
 European banks in one PSD2 API, and exposes them to Claude as an MCP
 connector. Read-only, no payments, no third party holding your data.
@@ -14,7 +15,7 @@ connector. Read-only, no payments, no third party holding your data.
 ## How it works
 
 ```
-Claude ──OAuth──▶ your openbanking-mcp server ──JWT──▶ Enable Banking ──PSD2──▶ your bank
+Claude ──OAuth──▶ your Bank™ server ──JWT──▶ Enable Banking ──PSD2──▶ your bank
 ```
 
 - **Claude** talks to your server as a custom connector. You sign in once with
@@ -54,7 +55,7 @@ Any container host works. Set these environment variables:
 | `BASE_URL` | `https://YOUR-HOST` |
 | `ADMIN_PASSWORD_HASH` | output of `npm run hash-password` (or set `ADMIN_PASSWORD`) |
 | `DEFAULT_COUNTRY` | your country code, e.g. `DK` |
-| `APP_NAME` | optional, the name shown on the sign-in and status pages |
+| `APP_NAME` | optional, the name shown on the sign-in and status pages (default `Bank™`) |
 
 and mount a volume at `/data`. Optional: `NOTIFY_WEBHOOK_URL` for watch
 notifications (a Slack incoming webhook works). Full list in
