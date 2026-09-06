@@ -37,7 +37,8 @@ At <https://enablebanking.com/cp/applications> create an application:
 
 - Environment: **Production** (your real accounts) or **Sandbox** (test data).
 - Keep "generate private key" selected. A `.pem` file downloads; keep it safe.
-- Redirect URL: `https://YOUR-HOST/callback`.
+- Redirect URL: `https://YOUR-HOST/callback`. If you do not know the address
+  yet, leave it and add it after step 2; the status page shows the exact URL.
 - Production asks for a description, a data-protection email and privacy and
   terms URLs. Use `https://YOUR-HOST/privacy` and `https://YOUR-HOST/terms`;
   the server serves both. The description is what you read on the consent
@@ -51,37 +52,42 @@ Note the application id (a UUID) shown after saving.
 
 ### 2. Deploy
 
-Any container host works. Set these environment variables:
+Any container host works. The server needs a persistent volume at `/data`
+and a public https address; everything else it asks you for on first run.
+
+**Railway:** New Project, Deploy from GitHub repo, pick this repo. Add a
+volume mounted at `/data` and generate a domain (Settings, Networking, port
+8080). The Dockerfile and [railway.json](railway.json) are picked up
+automatically, and the server learns its own address from Railway.
+
+**Docker Compose on your own box:** `docker compose up -d`, then put a TLS
+terminator in front (Caddy needs two lines:
+`YOUR-HOST { reverse_proxy localhost:8080 }`) and set `BASE_URL` to the
+public address. Fly.io works like Railway: volume at `/data`, the app name
+gives the address.
+
+Then open the address. The first visit shows a setup page: paste the
+application id, choose the `.pem` file, pick a password of twelve characters
+or more. That is stored on the volume and the page turns into a status page
+with two addresses to copy: the redirect URL to register at Enable Banking
+(step 1 above; add it now if you did not know the address yet) and the
+connector URL for Claude.
+
+Prefer configuration by environment? Set the variables and the setup page
+never appears:
 
 | Variable | Value |
 |---|---|
 | `EB_APP_ID` | the application id |
 | `EB_PRIVATE_KEY` | the `.pem` contents, base64: `base64 -i app.pem \| tr -d '\n'` |
-| `BASE_URL` | `https://YOUR-HOST` |
 | `ADMIN_PASSWORD_HASH` | output of `npm run hash-password` (or set `ADMIN_PASSWORD`) |
+| `BASE_URL` | `https://YOUR-HOST` (Railway and Fly set this for you) |
 | `DEFAULT_COUNTRY` | your country code, e.g. `DK` |
 | `APP_NAME` | optional, the name shown on the sign-in and status pages (default `Bank™`) |
 
-and mount a volume at `/data`. Optional: `NOTIFY_WEBHOOK_URL` for watch
-notifications (a Slack incoming webhook works). Full list in
-[.env.example](.env.example).
-
-With Docker Compose on your own box:
-
-```bash
-cp .env.example .env    # fill it in
-docker compose up -d
-```
-
-Put a TLS terminator in front (Caddy needs two lines:
-`YOUR-HOST { reverse_proxy localhost:8080 }`). On Railway: create a project from this GitHub repo (the Dockerfile and
-[railway.json](railway.json) are picked up automatically), add a volume
-mounted at `/data`, set the variables above, and generate a public domain.
-Fly.io works the same way with a volume and `fly secrets set`.
-
-Open `https://YOUR-HOST/`. It shows what is still missing, or the connector URL
-when everything is in place. `npm run check` does the same from a terminal and
-also confirms the redirect URL is registered.
+Optional: `NOTIFY_WEBHOOK_URL` for watch notifications and sign-in alerts (a
+Slack incoming webhook works). Full list in [.env.example](.env.example).
+`npm run check` verifies a configuration from a terminal.
 
 ### 3. Add the connector in Claude
 

@@ -1,33 +1,92 @@
-import { accessSync, constants, existsSync, mkdirSync, readFileSync } from "node:fs";
+// Configuration comes from two places. Environment variables always win.
+// Anything missing is read from the data directory, where the first-run
+// setup page stores the application id, the key file and the password hash.
+import { accessSync, constants, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
-const port = Number(process.env.PORT ?? 8080);
+const env = process.env;
+const port = Number(env.PORT ?? 8080);
+const dataDir = env.DATA_DIR ?? "./data";
+
+export interface Settings {
+  app_id?: string;
+  admin_password_hash?: string;
+  country?: string;
+  setup_completed?: string;
+}
+
+const settingsPath = join(dataDir, "settings.json");
+const keyPath = join(dataDir, "enablebanking.pem");
+let settings: Settings = readSettings();
+
+function readSettings(): Settings {
+  try {
+    return existsSync(settingsPath) ? (JSON.parse(readFileSync(settingsPath, "utf8")) as Settings) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveSettings(patch: Settings): void {
+  mkdirSync(dataDir, { recursive: true });
+  settings = { ...settings, ...patch };
+  writeFileSync(settingsPath, JSON.stringify(settings, null, 2), { mode: 0o600 });
+}
+
+export function saveKeyFile(pem: string): void {
+  mkdirSync(dataDir, { recursive: true });
+  writeFileSync(keyPath, pem.trim() + "\n", { mode: 0o600 });
+}
+
+/** Public URL guessed from the platform when BASE_URL is not set. */
+function detectBaseUrl(): string {
+  if (env.BASE_URL) return env.BASE_URL.replace(/\/+$/, "");
+  if (env.RAILWAY_PUBLIC_DOMAIN) return `https://${env.RAILWAY_PUBLIC_DOMAIN}`;
+  if (env.FLY_APP_NAME) return `https://${env.FLY_APP_NAME}.fly.dev`;
+  return `http://localhost:${port}`;
+}
 
 export const config = {
-  appId: process.env.EB_APP_ID ?? "",
-  privateKey: process.env.EB_PRIVATE_KEY ?? "",
-  privateKeyPath: process.env.EB_PRIVATE_KEY_PATH ?? "",
-  apiBase: process.env.EB_API_BASE ?? "https://api.enablebanking.com",
-  country: (process.env.DEFAULT_COUNTRY ?? "DK").toUpperCase(),
+  get appId(): string {
+    return env.EB_APP_ID ?? settings.app_id ?? "";
+  },
+  get privateKey(): string {
+    return env.EB_PRIVATE_KEY ?? "";
+  },
+  get privateKeyPath(): string {
+    if (env.EB_PRIVATE_KEY_PATH) return env.EB_PRIVATE_KEY_PATH;
+    return existsSync(keyPath) ? keyPath : "";
+  },
+  apiBase: env.EB_API_BASE ?? "https://api.enablebanking.com",
+  get country(): string {
+    return (env.DEFAULT_COUNTRY ?? settings.country ?? "DK").toUpperCase();
+  },
   port,
-  baseUrl: (process.env.BASE_URL ?? `http://localhost:${port}`).replace(/\/+$/, ""),
-  dataDir: process.env.DATA_DIR ?? "./data",
-  appName: process.env.APP_NAME ?? "Bank™",
-  adminPasswordHash: process.env.ADMIN_PASSWORD_HASH ?? "",
-  adminPassword: process.env.ADMIN_PASSWORD ?? "",
-  notifyWebhookUrl: process.env.NOTIFY_WEBHOOK_URL ?? "",
+  baseUrl: detectBaseUrl(),
+  dataDir,
+  appName: env.APP_NAME ?? "Bank™",
+  get adminPasswordHash(): string {
+    return env.ADMIN_PASSWORD_HASH ?? settings.admin_password_hash ?? "";
+  },
+  adminPassword: env.ADMIN_PASSWORD ?? "",
+  notifyWebhookUrl: env.NOTIFY_WEBHOOK_URL ?? "",
   // Hosts an OAuth client may send the sign-in back to. Stops a phishing link
   // from registering a client that redirects your authorization code elsewhere.
-  allowedRedirectHosts: (process.env.ALLOWED_REDIRECT_HOSTS ?? "claude.ai,claude.com,localhost,127.0.0.1")
+  allowedRedirectHosts: (env.ALLOWED_REDIRECT_HOSTS ?? "claude.ai,claude.com,localhost,127.0.0.1")
     .split(",")
     .map((h) => h.trim().toLowerCase())
     .filter(Boolean),
   // Optional: terminate TLS in the process itself (for running on your own
   // machine). Hosted deployments normally get TLS from the platform.
-  tlsCertPath: process.env.TLS_CERT_PATH ?? "",
-  tlsKeyPath: process.env.TLS_KEY_PATH ?? "",
+  tlsCertPath: env.TLS_CERT_PATH ?? "",
+  tlsKeyPath: env.TLS_KEY_PATH ?? "",
   // Unattended polling for watches: PSD2 allows at most four account accesses
   // per day without the account holder present.
-  pollIntervalHours: Number(process.env.POLL_INTERVAL_HOURS ?? 6),
+  pollIntervalHours: Number(env.POLL_INTERVAL_HOURS ?? 6),
+  /** True when every secret came from the environment, so the setup page has nothing to do. */
+  get lockedByEnv(): boolean {
+    return Boolean(env.EB_APP_ID && (env.EB_PRIVATE_KEY || env.EB_PRIVATE_KEY_PATH) && (env.ADMIN_PASSWORD_HASH || env.ADMIN_PASSWORD));
+  },
 };
 
 export function tlsOptions(): { cert: string; key: string } | undefined {
@@ -35,15 +94,14 @@ export function tlsOptions(): { cert: string; key: string } | undefined {
   return { cert: readFileSync(config.tlsCertPath, "utf8"), key: readFileSync(config.tlsKeyPath, "utf8") };
 }
 
-const looksLikeUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export const looksLikeUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Human-readable list of what is still missing before the server can run. */
+/** Human-readable list of what is still missing before the server can talk to banks. */
 export function setupProblems(): string[] {
   const problems: string[] = [];
-  if (!config.appId) problems.push("EB_APP_ID is not set");
+  if (!config.appId) problems.push("Enable Banking application id is not set");
   else if (!looksLikeUuid.test(config.appId)) problems.push("EB_APP_ID does not look like a UUID");
-  if (!config.privateKey && !config.privateKeyPath) problems.push("Set EB_PRIVATE_KEY (base64 of the .pem) or EB_PRIVATE_KEY_PATH");
-  else if (!config.privateKey && !existsSync(config.privateKeyPath)) problems.push(`Private key not found at ${config.privateKeyPath}`);
+  if (!config.privateKey && !config.privateKeyPath) problems.push("Enable Banking private key is not set");
   else {
     try {
       const pem = readPrivateKey();
@@ -52,7 +110,7 @@ export function setupProblems(): string[] {
       problems.push(`Cannot read private key: ${(err as Error).message}`);
     }
   }
-  if (!config.adminPasswordHash && !config.adminPassword) problems.push("Set ADMIN_PASSWORD_HASH (run `npm run hash-password`) or ADMIN_PASSWORD");
+  if (!config.adminPasswordHash && !config.adminPassword) problems.push("Admin password is not set");
   if (!/^https?:\/\//.test(config.baseUrl)) problems.push("BASE_URL must start with http:// or https://");
   try {
     mkdirSync(config.dataDir, { recursive: true });

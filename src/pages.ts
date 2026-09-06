@@ -37,8 +37,10 @@ export function shell(title: string, body: string, opts: { kind?: Kind; pill?: s
   ul.rows li:last-child{border-bottom:1px solid var(--line)}
   ul.rows .r{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
   label{display:block;font-weight:600;font-size:14px;margin:18px 0 6px}
-  input{width:100%;font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
-  input:focus{outline:2px solid var(--ink);outline-offset:1px;border-color:transparent}
+  input,textarea{width:100%;font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+  textarea{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;margin-top:8px;resize:vertical}
+  input[type=file]{padding:9px 12px;font-size:14px}
+  input:focus,textarea:focus{outline:2px solid var(--ink);outline-offset:1px;border-color:transparent}
   button{width:100%;margin-top:14px;font:inherit;font-weight:700;padding:13px 16px;border:0;border-radius:10px;background:var(--ink);color:var(--bg);cursor:pointer}
   button:hover{opacity:.92}
   code{font:13px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg);border:1px solid var(--line);padding:6px 10px;border-radius:8px;display:inline-block;word-break:break-all}
@@ -84,7 +86,7 @@ export function failedPage(message: string): string {
   return shell("Bank not connected", `<p class="error">${esc(message)}</p><p class="muted">Go back to Claude and start again.</p>`, { kind: "error", pill: "Not connected" });
 }
 
-export function statusPage(input: { problems: string[]; mcpUrl: string }): string {
+export function statusPage(input: { problems: string[]; mcpUrl: string; callbackUrl: string }): string {
   if (input.problems.length) {
     return shell(
       "Not configured yet",
@@ -96,8 +98,40 @@ export function statusPage(input: { problems: string[]; mcpUrl: string }): strin
   // this page is reachable without a password. Ask consent_status in Claude.
   return shell(
     config.appName,
-    `<p>Running. Add this URL as a custom connector in Claude and sign in with the admin password:</p><p><code>${esc(input.mcpUrl)}</code></p>`,
+    `<p>Running. Two addresses to copy:</p>
+     <p class="muted" style="margin-bottom:4px">Redirect URL for the application at Enable Banking</p><p><code>${esc(input.callbackUrl)}</code></p>
+     <p class="muted" style="margin-bottom:4px">Custom connector URL in Claude (sign in with the admin password)</p><p><code>${esc(input.mcpUrl)}</code></p>`,
     { kind: "ok", pill: "Running" },
+  );
+}
+
+export function setupPage(opts: { error?: string; values?: { app_id?: string; country?: string } } = {}): string {
+  const v = opts.values ?? {};
+  return shell(
+    `Set up ${config.appName}`,
+    `<p>Three things from your <a href="https://enablebanking.com/cp/applications" target="_blank" rel="noopener">Enable Banking application</a>, and a password. Nothing leaves this server.</p>
+     ${opts.error ? `<p class="error">${esc(opts.error)}</p>` : ""}
+     <form method="post" action="/setup" id="setup">
+       <label for="app_id">Application id</label>
+       <input id="app_id" name="app_id" required autocomplete="off" spellcheck="false" placeholder="aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee" value="${esc(v.app_id ?? "")}">
+       <label for="pemfile">Private key file (the .pem that downloaded when you registered)</label>
+       <input id="pemfile" type="file" accept=".pem,.key,.txt,application/x-pem-file">
+       <textarea id="pem" name="pem" rows="3" placeholder="…or paste the contents of the .pem file here" spellcheck="false"></textarea>
+       <label for="country">Country of your banks</label>
+       <input id="country" name="country" maxlength="2" placeholder="DK" value="${esc(v.country ?? "")}" style="width:6em;text-transform:uppercase">
+       <label for="password">Password (12+ characters, used when connecting Claude)</label>
+       <input id="password" type="password" name="password" required minlength="12" autocomplete="new-password">
+       <label for="password2">Repeat password</label>
+       <input id="password2" type="password" name="password2" required minlength="12" autocomplete="new-password">
+       <button type="submit">Finish setup</button>
+     </form>
+     <script>
+       document.getElementById("pemfile").addEventListener("change", (e) => {
+         const f = e.target.files[0]; if (!f) return;
+         const r = new FileReader(); r.onload = () => { document.getElementById("pem").value = r.result; }; r.readAsText(f);
+       });
+     </script>`,
+    { kind: "neutral", pill: "First run" },
   );
 }
 

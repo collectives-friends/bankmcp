@@ -15,13 +15,17 @@ const fakeRes = () => {
   return { out, res: res as unknown as import("express").Response };
 };
 
-test("password hashing round-trips", () => {
+test("password hashing round-trips and the hash takes precedence over a plain password", () => {
   const h = hashPassword("secret-123");
   assert.match(h, /^scrypt\$/);
   process.env.ADMIN_PASSWORD_HASH = h;
-  // config is read at import time; verifyPassword prefers the hash when set on config, so test the pure path:
+  try {
+    assert.equal(verifyPassword("secret-123"), true);
+    assert.equal(verifyPassword("correct horse"), false, "plain ADMIN_PASSWORD is ignored while a hash is set");
+  } finally {
+    delete process.env.ADMIN_PASSWORD_HASH;
+  }
   assert.equal(verifyPassword("correct horse"), true);
-  delete process.env.ADMIN_PASSWORD_HASH;
 });
 
 test("full authorization code flow with PKCE, refresh and revocation", async () => {

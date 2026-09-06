@@ -11,7 +11,8 @@ import { config, isConfigured, setupProblems, tlsOptions } from "./config.ts";
 import { eb, EnableBankingError } from "./enablebanking.ts";
 import { store } from "./store.ts";
 import { SingleUserProvider } from "./auth.ts";
-import { connectedPage, failedPage, loginPage, privacyPage, shell as page, statusPage, termsPage } from "./pages.ts";
+import { connectedPage, failedPage, loginPage, privacyPage, setupPage, statusPage, termsPage } from "./pages.ts";
+import { applySetup, setupAvailable } from "./setup.ts";
 import { createServer, VERSION } from "./mcp.ts";
 import { startWatcher } from "./watcher.ts";
 
@@ -45,13 +46,23 @@ const provider = new SingleUserProvider(store(), {
 });
 
 // Changing the admin password logs every client out.
-{
-  const fingerprint = createHash("sha256").update(config.adminPasswordHash || config.adminPassword).digest("hex");
+function rememberPasswordFingerprint(): void {
+  const secret = config.adminPasswordHash || config.adminPassword;
+  if (!secret) return;
+  const fingerprint = createHash("sha256").update(secret).digest("hex");
   if (store().data.oauth.password_fingerprint && store().data.oauth.password_fingerprint !== fingerprint) {
     provider.revokeAll();
     log("admin password changed: all tokens revoked");
   }
   if (store().data.oauth.password_fingerprint !== fingerprint) store().update((d) => void (d.oauth.password_fingerprint = fingerprint));
+}
+rememberPasswordFingerprint();
+
+let watcherStarted = false;
+function startWatcherOnce(): void {
+  if (watcherStarted || !isConfigured()) return;
+  watcherStarted = true;
+  startWatcher();
 }
 
 function notify(text: string): void {
@@ -66,8 +77,24 @@ function notify(text: string): void {
 
 // --- Status page, health, legal ---
 
+const callbackUrl = new URL("/callback", baseUrl).href;
+// The setup page reads the chosen key file in the browser, which needs one inline script.
+const setupCsp = "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
+
 app.get("/", (_req, res) => {
-  res.type("html").send(statusPage({ problems: setupProblems(), mcpUrl: mcpUrl.href }));
+  if (setupAvailable()) return void res.set("Content-Security-Policy", setupCsp).type("html").send(setupPage());
+  res.type("html").send(statusPage({ problems: setupProblems(), mcpUrl: mcpUrl.href, callbackUrl }));
+});
+
+app.post("/setup", express.urlencoded({ extended: false, limit: "64kb" }), (req, res) => {
+  if (!setupAvailable()) return void res.status(404).type("html").send(failedPage("Setup is already complete."));
+  const body = req.body as Record<string, string | undefined>;
+  const error = applySetup(body);
+  if (error) return void res.status(400).set("Content-Security-Policy", setupCsp).type("html").send(setupPage({ error, values: { app_id: body.app_id, country: body.country } }));
+  log("setup completed via the setup page");
+  rememberPasswordFingerprint();
+  startWatcherOnce();
+  res.redirect(303, "/");
 });
 
 app.get("/healthz", (_req, res) => void res.json({ ok: true, version: VERSION, configured: isConfigured() }));
@@ -148,6 +175,6 @@ const httpServer = tls ? createHttpsServer(tls, app) : createHttpServer(app);
 httpServer.listen(config.port, () => {
   log(`listening on ${tls ? "https" : "http"}://0.0.0.0:${config.port}, public URL ${config.baseUrl}`);
   const problems = setupProblems();
-  if (problems.length) log("not configured:", problems);
-  else startWatcher();
+  if (problems.length) log(setupAvailable() ? `not configured yet: open ${config.baseUrl} to finish setup` : "not configured:", problems);
+  else startWatcherOnce();
 });

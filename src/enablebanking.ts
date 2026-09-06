@@ -100,6 +100,12 @@ export class EnableBankingError extends Error {
 let keyObject: KeyObject | undefined;
 let cachedToken: { value: string; exp: number } | undefined;
 
+/** Forget the loaded key and token, e.g. after the setup page stored a new key. */
+export function resetKeyCache(): void {
+  keyObject = undefined;
+  cachedToken = undefined;
+}
+
 const b64url = (input: Buffer | string) => Buffer.from(input).toString("base64url");
 
 export function makeJwt(now = Math.floor(Date.now() / 1000)): string {
