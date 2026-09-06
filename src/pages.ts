@@ -83,7 +83,7 @@ export function failedPage(message: string): string {
   return shell("Bank not connected", `<p class="error">${esc(message)}</p><p class="muted">Go back to Claude and start again.</p>`, { kind: "error", pill: "Not connected" });
 }
 
-export function statusPage(input: { problems: string[]; mcpUrl: string; banks: Array<{ name: string; accounts: number; daysLeft: number }> }): string {
+export function statusPage(input: { problems: string[]; mcpUrl: string }): string {
   if (input.problems.length) {
     return shell(
       "Not configured yet",
@@ -91,12 +91,11 @@ export function statusPage(input: { problems: string[]; mcpUrl: string; banks: A
       { kind: "error", pill: "Setup incomplete" },
     );
   }
-  const banks = input.banks.length
-    ? `<ul class="rows">${input.banks.map((b) => `<li><span>${esc(b.name)}</span><span class="r">${b.accounts} account${b.accounts === 1 ? "" : "s"} · ${b.daysLeft} days</span></li>`).join("")}</ul>`
-    : `<p class="muted">No bank connected yet. In Claude, say “connect my bank”.</p>`;
+  // Deliberately says nothing about which banks or accounts are connected:
+  // this page is reachable without a password. Ask consent_status in Claude.
   return shell(
     config.appName,
-    `<p>Running. Add this URL as a custom connector in Claude:</p><p><code>${esc(input.mcpUrl)}</code></p>${banks}`,
+    `<p>Running. Add this URL as a custom connector in Claude and sign in with the admin password:</p><p><code>${esc(input.mcpUrl)}</code></p>`,
     { kind: "ok", pill: "Running" },
   );
 }

@@ -13,7 +13,6 @@ import { SingleUserProvider } from "./auth.ts";
 import { connectedPage, failedPage, loginPage, privacyPage, shell as page, statusPage, termsPage } from "./pages.ts";
 import { createServer, VERSION } from "./mcp.ts";
 import { startWatcher } from "./watcher.ts";
-import { daysLeft } from "./data.ts";
 
 const log = (msg: string, extra?: unknown) => console.log(`[bank ${new Date().toISOString()}] ${msg}`, extra ?? "");
 
@@ -28,14 +27,7 @@ const provider = new SingleUserProvider(store());
 // --- Status page, health, legal ---
 
 app.get("/", (_req, res) => {
-  const s = store();
-  res.type("html").send(
-    statusPage({
-      problems: setupProblems(),
-      mcpUrl: mcpUrl.href,
-      banks: s.sessions().map((x) => ({ name: x.bank.name, accounts: s.accounts().filter((a) => a.session_id === x.id).length, daysLeft: daysLeft(x.valid_until) })),
-    }),
-  );
+  res.type("html").send(statusPage({ problems: setupProblems(), mcpUrl: mcpUrl.href }));
 });
 
 app.get("/healthz", (_req, res) => void res.json({ ok: true, version: VERSION, configured: isConfigured() }));
