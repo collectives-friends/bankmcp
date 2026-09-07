@@ -1,6 +1,6 @@
 # BankMCP™
 
-**Your AI can now read your bank.** Ask it anything about them. Read-only, self-hosted, one user. Standard MCP; tested with Claude and Ollama.
+**Your AI can now read your bank.** Ask it anything about your accounts. Read-only, self-hosted, one user. Standard MCP; tested with Claude and Ollama.
 
 BankMCP™ is not a bank. It is a small open-source server you host yourself
 (package name `bank-mcp`). It connects to your banks
