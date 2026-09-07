@@ -64,7 +64,7 @@ export const config = {
   port,
   baseUrl: detectBaseUrl(),
   dataDir,
-  appName: env.APP_NAME ?? "Bank™",
+  appName: env.APP_NAME ?? "BankMCP™",
   get adminPasswordHash(): string {
     return env.ADMIN_PASSWORD_HASH ?? settings.admin_password_hash ?? "";
   },

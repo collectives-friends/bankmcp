@@ -2,14 +2,14 @@
   "name": "bank",
   "owner": { "name": "Nils Smed", "url": "https://github.com/noskillish" },
   "metadata": {
-    "description": "Bank™: ask Claude about your own bank accounts. Read-only, self-hosted, on PSD2 open banking via Enable Banking.",
+    "description": "BankMCP™: ask Claude about your own bank accounts. Read-only, self-hosted, on PSD2 open banking via Enable Banking.",
     "version": "0.1.0"
   },
   "plugins": [
     {
       "name": "bank",
       "source": "./plugin",
-      "description": "Bank™ for Claude Code: connects to your own open-banking server (bank-mcp, Enable Banking) and adds a skill with account mapping, categorisation rules and a monthly review format.",
+      "description": "BankMCP™ for Claude Code: connects to your own open-banking server (bank-mcp, Enable Banking) and adds a skill with account mapping, categorisation rules and a monthly review format.",
       "version": "0.1.0",
       "author": { "name": "Nils Smed" },
       "homepage": "https://github.com/noskillish/bank",

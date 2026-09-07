@@ -1,5 +1,5 @@
 // Talk to your bank with a local model. Bridges an Ollama model (or any
-// OpenAI-style chat endpoint with tool calling) to the Bank™ tools over stdio,
+// OpenAI-style chat endpoint with tool calling) to the BankMCP™ tools over stdio,
 // so nothing about your accounts ever reaches a model provider.
 //
 //   npm run chat -- "what's my balance?"      one question
@@ -70,7 +70,7 @@ if (oneShot) {
   console.log(await ask(history, oneShot));
 } else {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
-  console.log(`Bank™ · local model ${MODEL} · ${tools.length} tools. Ctrl-C to quit.`);
+  console.log(`BankMCP™ · local model ${MODEL} · ${tools.length} tools. Ctrl-C to quit.`);
   for (;;) {
     const q = (await rl.question("\n> ")).trim();
     if (!q) continue;

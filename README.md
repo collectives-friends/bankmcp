@@ -1,8 +1,8 @@
-# Bank™
+# BankMCP™
 
 **Your bank, in Claude.** Read-only, self-hosted, one user.
 
-Bank™ is not a bank. It is a small open-source server you host yourself
+BankMCP™ is not a bank. It is a small open-source server you host yourself
 (package name `bank-mcp`). It connects to your banks
 through [Enable Banking](https://enablebanking.com), which wraps 2,700+
 European banks in one PSD2 API, and exposes them to Claude as an MCP
@@ -15,7 +15,7 @@ connector. Read-only, no payments, no third party holding your data.
 ## How it works
 
 ```
-Claude ──OAuth──▶ your Bank™ server ──JWT──▶ Enable Banking ──PSD2──▶ your bank
+Claude ──OAuth──▶ your BankMCP™ server ──JWT──▶ Enable Banking ──PSD2──▶ your bank
 ```
 
 - **Claude** talks to your server as a custom connector. You sign in once with
@@ -77,7 +77,7 @@ appears:
 | `ADMIN_PASSWORD_HASH` | output of `npm run hash-password` (or set `ADMIN_PASSWORD`) |
 | `BASE_URL` | `https://YOUR-HOST` (Railway and Fly set this for you) |
 | `DEFAULT_COUNTRY` | your country code, e.g. `DK` |
-| `APP_NAME` | optional, the name shown on the sign-in and status pages (default `Bank™`) |
+| `APP_NAME` | optional, the name shown on the sign-in and status pages (default `BankMCP™`) |
 
 Optional: `NOTIFY_WEBHOOK_URL` for watch notifications and sign-in alerts (a
 Slack incoming webhook works). Full list in [.env.example](.env.example).
@@ -86,7 +86,7 @@ Slack incoming webhook works). Full list in [.env.example](.env.example).
 ### 4. Add the connector in Claude
 
 In claude.ai (or the desktop app): **Settings → Connectors → Add custom
-connector**. Name it `Bank™`, paste `https://YOUR-HOST/mcp`, save, then click
+connector**. Name it `BankMCP™`, paste `https://YOUR-HOST/mcp`, save, then click
 **Connect**. Your server shows a password page; enter the admin password. That
 is the only login you will do.
 
@@ -262,7 +262,7 @@ plugin/               Claude Code plugin with the bank skill
 
 ## What this is, and is not
 
-Bank™ is software, not a service. There is no hosted Bank™, no account to sign
+BankMCP™ is software, not a service. There is no hosted BankMCP™, no account to sign
 up for, and nobody but you ever touches your server, your key or your bank
 consents. Each person who uses it deploys their own copy and is the sole
 operator of that copy: they register their own Enable Banking application,
@@ -271,7 +271,7 @@ hosting, password and security.
 
 The authors publish the code and nothing else. They do not run any instance
 for others, receive no data, and are not affiliated with Enable Banking,
-Anthropic or any bank. Bank™ is not a bank, does not hold money, and gives no
+Anthropic or any bank. BankMCP™ is not a bank, does not hold money, and gives no
 financial advice. The software is provided as is, without warranty of any
 kind, under the MIT licence below.
 

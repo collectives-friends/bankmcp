@@ -1,7 +1,7 @@
 {
   "name": "bank",
   "version": "0.1.0",
-  "description": "Bank™: work with your own bank accounts through an bank-mcp (Enable Banking, open banking) connector: account mapping, categorisation rules and the monthly review format.",
+  "description": "BankMCP™: work with your own bank accounts through an bank-mcp (Enable Banking, open banking) connector: account mapping, categorisation rules and the monthly review format.",
   "author": { "name": "Nils Smed" },
   "homepage": "https://github.com/noskillish/bank",
   "license": "MIT",
