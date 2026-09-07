@@ -310,7 +310,7 @@
           const bottom = el.getBoundingClientRect().bottom - trackTop + 6; // +6: the pre-reveal translateY
           const need = bottom - top + pad * 2;
           if (need > chat.clientHeight) chat.style.height = need + "px";
-          slideTo(top - pad);
+          slideTo(top); // the card's own padding already provides the headroom
           await wait(500); el.classList.add("grow"); continue;
         }
         reveal(el); await wait(1100);
