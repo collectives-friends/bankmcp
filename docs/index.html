@@ -57,6 +57,14 @@
   .tool code { font-size: 0.66rem; color: var(--dim); }
   .tool .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 0.45rem; vertical-align: middle; }
 
+  /* Animated dialogue */
+  .chat > * { opacity: 0; transform: translateY(6px); animation: pop .45s ease-out forwards; animation-delay: var(--d, 0s); }
+  @keyframes pop { to { opacity: 1; transform: none; } }
+  .art-wrap .artifact { margin-top: 0; }
+  .env .fill { transform-origin: left; transform: scaleX(0); animation: grow .9s cubic-bezier(.2,.7,.2,1) forwards; animation-delay: 6.2s; }
+  @keyframes grow { to { transform: scaleX(1); } }
+  @media (prefers-reduced-motion: reduce) { .chat > *, .env .fill { animation: none; opacity: 1; transform: none; } }
+
   section { padding: 4.5rem 0; border-top: 1px solid var(--border); }
   @media (min-width: 768px) { section { padding: 5.5rem 0; } }
   .eyebrow { font-size: 0.65rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 1.5rem; }
@@ -88,7 +96,7 @@
   .lead-in .who { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 0 0 0.35rem; }
   .lead-in .who.r { text-align: right; }
   .lead-in .tool { margin: 0 0 0.75rem 0.25rem; }
-  .artifact { margin-top: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
+  .artifact { margin-top: 0; background: var(--bg); background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
   .artifact .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.25rem; }
   .artifact .head h4 { font-size: 0.95rem; font-weight: 500; letter-spacing: -0.01em; }
   .artifact .head span { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
@@ -133,7 +141,6 @@
   <div class="container">
     <a class="logo" href="#"><span class="mark">B</span>Bank™</a>
     <nav>
-      <a href="#artifacts">Artifacts</a>
       <a href="#how">How it works</a>
       <a href="#ask">What you can ask</a>
       <a href="#safe">Security</a>
@@ -152,33 +159,24 @@
     </div>
     <p class="proof"><strong>2,700+</strong> European banks via Enable Banking · <strong>12</strong> read-only tools · <strong>0</strong> payment tools · <strong>MIT</strong></p>
 
-    <div class="chat" aria-label="Example conversation">
-      <div class="who r">You</div>
-      <div class="msg me">Has Acme paid the invoice yet?</div>
-      <div class="who">Claude</div>
-      <div class="tool"><span class="dot"></span><code>get_transactions</code> · Main · last 14 days</div>
-      <div class="msg ai">Not yet. Nothing from Acme since 1 September. Want me to tell you when it lands?</div>
-      <div class="who r">You</div>
-      <div class="msg me">Yes.</div>
-      <div class="who">Claude</div>
-      <div class="tool"><span class="dot"></span><code>create_watch</code> · credit matching “Acme”</div>
-      <div class="msg ai" style="margin-bottom:0">Done. I'll message you when it arrives.</div>
-    </div>
-  </div>
-</div>
-
-<section id="artifacts">
-  <div class="container">
-    <div class="eyebrow">Artifacts</div>
-    <h2>Ask for a page, <span class="dim">not just an answer.</span></h2>
-    <p class="section-subtitle">Say “build me a spending dashboard” or “make me a budget” and Claude turns the numbers into a page you can keep and check against next month.</p>
-    <div class="lead-in">
-      <div class="who r">You</div>
-      <div class="msg me">Make me a monthly budget from the last three months.</div>
-      <div class="who">Claude</div>
-      <div class="tool"><span class="dot"></span><code>get_transactions</code> · 5 accounts · June → August · 641 transactions</div>
-    </div>
-    <div class="artifact" aria-label="Example artifact">
+    <div class="chat" aria-label="Example conversation" id="demo">
+      <div class="who r" style="--d:0.2s">You</div>
+      <div class="msg me" style="--d:0.2s">Has Acme paid the invoice yet?</div>
+      <div class="who" style="--d:0.8s">Claude</div>
+      <div class="tool" style="--d:0.8s"><span class="dot"></span><code>get_transactions</code> · Main · last 14 days</div>
+      <div class="msg ai" style="--d:1.3s">Not yet. Nothing from Acme since 1 September. Want me to tell you when it lands?</div>
+      <div class="who r" style="--d:2.0s">You</div>
+      <div class="msg me" style="--d:2.0s">Yes.</div>
+      <div class="who" style="--d:2.5s">Claude</div>
+      <div class="tool" style="--d:2.5s"><span class="dot"></span><code>create_watch</code> · credit matching “Acme”</div>
+      <div class="msg ai" style="--d:2.9s">Done. I'll message you when it arrives.</div>
+      <div class="who r" style="--d:3.8s">You</div>
+      <div class="msg me" style="--d:3.8s">Make me a monthly budget from the last three months.</div>
+      <div class="who" style="--d:4.5s">Claude</div>
+      <div class="tool" style="--d:4.5s"><span class="dot"></span><code>get_transactions</code> · 5 accounts · June → August · 641 transactions</div>
+      <div class="msg ai" style="--d:5.2s">Here it is, built from what you actually spent. Eating out is the one to watch.</div>
+      <div class="art-wrap" style="--d:5.6s">
+      <div class="artifact" aria-label="Example artifact">
       <div class="head"><h4>September budget</h4><span>Day 7 of 30 · Artifact</span></div>
       <div class="tiles">
         <div class="tile"><div class="l">Left to spend</div><div class="v">28,150</div><div class="d">of 42,000 this month</div></div>
@@ -194,9 +192,11 @@
         <div class="row"><div class="k">Everything else</div><div class="track"><div class="fill" style="width:29%"></div></div><div class="v">3,350 <span>/ 11,800</span></div></div>
       </div>
       <div class="note">Illustrative. Budgets came from three months of real spending; the fill is this month so far, refreshed whenever you ask.</div>
+      </div>
     </div>
   </div>
-</section>
+</div>
+
 
 <section id="how">
   <div class="container">
