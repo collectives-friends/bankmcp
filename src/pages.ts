@@ -160,9 +160,14 @@ export function setupPage(opts: { error?: string; values?: { app_id?: string; co
 export const privacyPage = () =>
   shell(
     "Privacy",
-    `<p>This server is operated by its owner to access the owner's own bank accounts. It is not offered as a service to anyone else.</p>
-     <p>Account identifiers and consent references from Enable Banking are stored on the server so the owner's assistant can fetch balances and transactions on request. Transactions and balances themselves are not stored. No data is shared with third parties and nothing is collected about visitors.</p>`,
+    `<p>This server is operated by the person who deployed it, to access their own bank accounts. It is not offered as a service to anyone else.</p>
+     <p>Account identifiers and consent references from Enable Banking are stored on the server so the operator's assistant can fetch balances and transactions on request. Transactions and balances themselves are not stored. No data is shared with third parties and nothing is collected about visitors.</p>
+     <p>The software is open source. Its authors do not operate this server, receive no data from it, and are not affiliated with Enable Banking, Anthropic or any bank.</p>`,
   );
 
 export const termsPage = () =>
-  shell("Terms", `<p>Personal software run by its owner for their own non-commercial use, under Enable Banking's terms for individual use of their production environment.</p>`);
+  shell(
+    "Terms",
+    `<p>Personal software run by the person who deployed it, for their own non-commercial use, under Enable Banking's terms for individual use of their production environment. The operator is solely responsible for this instance.</p>
+     <p>The software is provided as is, without warranty of any kind, under the MIT licence. Its authors are not a party to the operator's agreements with Enable Banking or any bank.</p>`,
+  );

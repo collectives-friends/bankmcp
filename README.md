@@ -242,6 +242,21 @@ src/cli.ts            check, hash-password, watch
 plugin/               Claude Code plugin with the bank skill
 ```
 
+## What this is, and is not
+
+Bank™ is software, not a service. There is no hosted Bank™, no account to sign
+up for, and nobody but you ever touches your server, your key or your bank
+consents. Each person who uses it deploys their own copy and is the sole
+operator of that copy: they register their own Enable Banking application,
+accept Enable Banking's terms themselves, and are responsible for their own
+hosting, password and security.
+
+The authors publish the code and nothing else. They do not run any instance
+for others, receive no data, and are not affiliated with Enable Banking,
+Anthropic or any bank. Bank™ is not a bank, does not hold money, and gives no
+financial advice. The software is provided as is, without warranty of any
+kind, under the MIT licence below.
+
 ## License
 
 MIT
