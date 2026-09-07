@@ -101,6 +101,10 @@
   .bars .k { color: var(--dim); font-weight: 300; }
   .bars .b { height: 8px; border-radius: 0 4px 4px 0; background: var(--ink); }
   .bars .v { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); font-size: 0.78rem; }
+  .bars .k em { font-style: normal; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-left: 0.4rem; }
+  .bars .v s { color: var(--muted); text-decoration: line-through; margin-right: 0.35rem; font-weight: 300; }
+  .bars.budget { grid-template-columns: 9.5rem 1fr 6.5rem; }
+  @media (max-width: 520px) { .bars.budget { grid-template-columns: 6.5rem 1fr 5.5rem; } }
   .artifact .note { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--muted); font-weight: 300; }
   @media (max-width: 520px) { .tiles { grid-template-columns: 1fr; } .bars { grid-template-columns: 5.5rem 1fr 3.5rem; } }
 
@@ -192,26 +196,27 @@
     <p class="section-subtitle">Say “build me a spending dashboard” or “make me a budget” and Claude turns the numbers into a page you can keep and check against next month.</p>
     <div class="lead-in">
       <div class="who r">You</div>
-      <div class="msg me">Build me a spending dashboard for August.</div>
+      <div class="msg me">Make me a monthly budget from the last three months.</div>
       <div class="who">Claude</div>
-      <div class="tool"><span class="dot"></span><code>get_transactions</code> · 5 accounts · 2026-08-01 → 2026-08-31 · 214 transactions</div>
+      <div class="tool"><span class="dot"></span><code>get_transactions</code> · 5 accounts · June → August · 641 transactions</div>
     </div>
     <div class="artifact" aria-label="Example artifact">
-      <div class="head"><h4>August</h4><span>Artifact · built by Claude</span></div>
+      <div class="head"><h4>Monthly budget</h4><span>Artifact · from 3 months of real spending</span></div>
       <div class="tiles">
-        <div class="tile"><div class="l">Income</div><div class="v">61,300</div><div class="d">salary + 1 payout</div></div>
-        <div class="tile"><div class="l">Spending</div><div class="v">38,450</div><div class="d">−6% vs July</div></div>
-        <div class="tile"><div class="l">Saved</div><div class="v">37%</div><div class="d">22,850 kept</div></div>
+        <div class="tile"><div class="l">Income</div><div class="v">61,300</div><div class="d">per month, after tax</div></div>
+        <div class="tile"><div class="l">Budget</div><div class="v">42,000</div><div class="d">was 45,900 on average</div></div>
+        <div class="tile"><div class="l">Saves</div><div class="v">19,300</div><div class="d">32% of income</div></div>
       </div>
-      <div class="bars">
-        <div class="k">Housing</div><div class="b" style="width:100%"></div><div class="v">14,200</div>
-        <div class="k">Other</div><div class="b" style="width:62%"></div><div class="v">8,850</div>
-        <div class="k">Groceries</div><div class="b" style="width:48%"></div><div class="v">6,850</div>
-        <div class="k">Eating out</div><div class="b" style="width:27%"></div><div class="v">3,900</div>
-        <div class="k">Transport</div><div class="b" style="width:19%"></div><div class="v">2,700</div>
-        <div class="k">Subscriptions</div><div class="b" style="width:14%"></div><div class="v">1,950</div>
+      <div class="bars budget">
+        <div class="k">Housing <em>fixed</em></div><div class="b" style="width:100%"></div><div class="v">14,200</div>
+        <div class="k">Groceries</div><div class="b" style="width:42%"></div><div class="v"><s>6,850</s> 6,000</div>
+        <div class="k">Insurance <em>fixed</em></div><div class="b" style="width:23%"></div><div class="v">3,300</div>
+        <div class="k">Eating out</div><div class="b" style="width:18%"></div><div class="v"><s>3,900</s> 2,500</div>
+        <div class="k">Transport</div><div class="b" style="width:16%"></div><div class="v">2,300</div>
+        <div class="k">Subscriptions <em>fixed</em></div><div class="b" style="width:13%"></div><div class="v">1,900</div>
+        <div class="k">Everything else</div><div class="b" style="width:83%"></div><div class="v"><s>13,450</s> 11,800</div>
       </div>
-      <div class="note">Illustrative numbers. Yours come from your transactions, regenerated any month with one sentence.</div>
+      <div class="note">Illustrative. Struck numbers are the three-month average; the budget is what Claude proposed to hit the savings target.</div>
     </div>
   </div>
 </section>
