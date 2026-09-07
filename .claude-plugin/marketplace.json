@@ -1,8 +1,11 @@
 {
   "name": "bank",
-  "owner": { "name": "Nils Smed", "url": "https://github.com/noskillish" },
+  "owner": {
+    "name": "Nils Smed",
+    "url": "https://github.com/noskillish"
+  },
   "metadata": {
-    "description": "BankMCP™: ask Claude about your own bank accounts. Read-only, self-hosted, on PSD2 open banking via Enable Banking.",
+    "description": "BankMCP™: ask your AI assistant about your own bank accounts. Read-only, self-hosted, on PSD2 open banking via Enable Banking. Works with any MCP client.",
     "version": "0.1.0"
   },
   "plugins": [
@@ -11,10 +14,17 @@
       "source": "./plugin",
       "description": "BankMCP™ for Claude Code: connects to your own open-banking server (bank-mcp, Enable Banking) and adds a skill with account mapping, categorisation rules and a monthly review format.",
       "version": "0.1.0",
-      "author": { "name": "Nils Smed" },
+      "author": {
+        "name": "Nils Smed"
+      },
       "homepage": "https://github.com/noskillish/bankmcp",
       "license": "MIT",
-      "keywords": ["banking", "personal-finance", "psd2", "enable-banking"],
+      "keywords": [
+        "banking",
+        "personal-finance",
+        "psd2",
+        "enable-banking"
+      ],
       "category": "productivity"
     }
   ]
