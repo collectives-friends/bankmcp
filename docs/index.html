@@ -132,7 +132,7 @@
 <div class="hero">
   <div class="container">
     <h1>Your bank,<br><span class="dim">in Claude.</span></h1>
-    <p class="subtitle">Ask about your balance, your spending, whether the invoice landed. Read-only, on a server you run, through open banking. Open source.</p>
+    <p class="subtitle">Ask about your balance, your spending, whether the invoice landed. Read-only, on a server you run. Open source.</p>
     <div class="cta-row">
       <a class="btn btn-primary" href="https://github.com/noskillish/bank#setup">Set it up →</a>
       <a class="btn btn-secondary" href="https://github.com/noskillish/bank/tree/main/src">View the code</a>
@@ -144,12 +144,12 @@
       <div class="msg me">Has Acme paid the invoice yet?</div>
       <div class="who">Claude</div>
       <div class="tool"><span class="dot"></span><code>get_transactions</code> · Main · last 14 days</div>
-      <div class="msg ai">Not yet. Nothing from Acme on Main since 1 September; the last credit was your salary on the 31st, <b>42,500</b>. Want me to tell you when it lands?</div>
+      <div class="msg ai">Not yet. Nothing from Acme since 1 September. Want me to tell you when it lands?</div>
       <div class="who r">You</div>
       <div class="msg me">Yes.</div>
       <div class="who">Claude</div>
       <div class="tool"><span class="dot"></span><code>create_watch</code> · credit matching “Acme”</div>
-      <div class="msg ai" style="margin-bottom:0">Done. I'll check a few times a day and message you the moment it arrives.</div>
+      <div class="msg ai" style="margin-bottom:0">Done. I'll message you when it arrives.</div>
     </div>
   </div>
 </div>
@@ -158,11 +158,11 @@
   <div class="container">
     <div class="eyebrow">How it works</div>
     <h2>Three parties. <span class="dim">You own the one in the middle.</span></h2>
-    <p class="section-subtitle">Claude talks to your server. Your server talks to your bank through Enable Banking, a licensed open-banking provider. Nobody else is in the chain.</p>
+    <p class="section-subtitle">Claude talks to your server. Your server talks to your bank through Enable Banking. Nobody else.</p>
     <div class="steps">
-      <div class="step"><div class="n">01</div><h3>Deploy your own copy</h3><p>One container and a small volume, on Railway, Fly or your own box. A fresh server shows a setup page in the browser. No terminal needed.</p></div>
-      <div class="step"><div class="n">02</div><h3>Register at Enable Banking</h3><p>Free. You get an application and a private key that never leaves your server. The setup page shows every value their form asks for, with copy buttons.</p></div>
-      <div class="step"><div class="n">03</div><h3>Connect Claude and your bank</h3><p>Add your server as a connector in Claude, sign in once with your password, then say <code>connect my bank</code> and log in at the bank as usual.</p></div>
+      <div class="step"><div class="n">01</div><h3>Deploy your own copy</h3><p>One container on Railway, Fly or your own box. A fresh server shows a setup page. No terminal.</p></div>
+      <div class="step"><div class="n">02</div><h3>Register at Enable Banking</h3><p>Free. You get a private key that never leaves your server. The setup page shows every value their form asks for.</p></div>
+      <div class="step"><div class="n">03</div><h3>Connect Claude and your bank</h3><p>Add your server as a connector, sign in once, then say <code>connect my bank</code> and log in at the bank as usual.</p></div>
     </div>
   </div>
 </section>
@@ -171,7 +171,7 @@
   <div class="container">
     <div class="eyebrow">What you can ask</div>
     <h2>Plain questions, <span class="dim">real numbers.</span></h2>
-    <p class="section-subtitle">Claude sees the same balances and transactions your banking app shows, and nothing it doesn't.</p>
+    <p class="section-subtitle">The same balances and transactions your banking app shows.</p>
     <ul class="asks">
       <li>What's my balance?</li>
       <li>How much did we spend on groceries in May?</li>
@@ -189,7 +189,7 @@
   <div class="container">
     <div class="eyebrow">Artifacts</div>
     <h2>Ask for a page, <span class="dim">not just an answer.</span></h2>
-    <p class="section-subtitle">Say “build me a spending dashboard for August” or “make me a budget” and Claude turns the numbers into an artifact: a page you can keep, check against next month, and come back to. The data still comes straight from your server, and it is stored nowhere else.</p>
+    <p class="section-subtitle">Say “build me a spending dashboard” or “make me a budget” and Claude turns the numbers into a page you can keep and check against next month.</p>
     <div class="lead-in">
       <div class="who r">You</div>
       <div class="msg me">Build me a spending dashboard for August.</div>
@@ -211,7 +211,7 @@
         <div class="k">Transport</div><div class="b" style="width:19%"></div><div class="v">2,700</div>
         <div class="k">Subscriptions</div><div class="b" style="width:14%"></div><div class="v">1,950</div>
       </div>
-      <div class="note">Illustrative numbers. Your artifact uses your transactions, categorised by the rules in the Bank™ skill, and can be regenerated any month with one sentence.</div>
+      <div class="note">Illustrative numbers. Yours come from your transactions, regenerated any month with one sentence.</div>
     </div>
   </div>
 </section>
@@ -221,10 +221,10 @@
     <div class="eyebrow">Security</div>
     <h2>It never moves money. <span class="dim">The worst case is boring.</span></h2>
     <div class="facts">
-      <div class="fact"><h3>Read-only, by design</h3><p>There are no payment tools and there never will be. Bank consents are read-only, and the server has no code path that could initiate a transfer.</p></div>
-      <div class="fact"><h3>Your server, your key</h3><p>The private key and the bank consents live on a server only you control. No third party, no shared service, no account to sign up for.</p></div>
-      <div class="fact"><h3>Nothing stored</h3><p>Balances and transactions are fetched when you ask and never written to disk. The only state is which banks you connected and your login.</p></div>
-      <div class="fact"><h3>One password, one alarm, one kill switch</h3><p>Every sign-in is logged and can message you. Changing the password logs every client out. Revoking the consent at your bank ends it all.</p></div>
+      <div class="fact"><h3>Read-only, by design</h3><p>No payment tools, ever. The consents are read-only and so is the code.</p></div>
+      <div class="fact"><h3>Your server, your key</h3><p>Key and consents live on a server only you control. No third party, no sign-up.</p></div>
+      <div class="fact"><h3>Nothing stored</h3><p>Balances and transactions are fetched when you ask and never written to disk.</p></div>
+      <div class="fact"><h3>One password, one alarm, one kill switch</h3><p>Sign-ins are logged and can message you. Changing the password logs everyone out. Revoking at your bank ends it all.</p></div>
     </div>
   </div>
 </section>
@@ -234,8 +234,8 @@
     <div class="eyebrow">Software, not a service</div>
     <h2>There is no hosted Bank™. <span class="dim">That's the point.</span></h2>
     <div class="fine">
-      <p>Each person deploys their own copy and is its only operator: they register their own Enable Banking application, accept its terms themselves, and are responsible for their own hosting, password and security. The authors publish the code and nothing else, receive no data, and are not affiliated with Enable Banking, Anthropic or any bank.</p>
-      <p><strong>Bank™ is not a bank.</strong> It holds no money and gives no financial advice. The ™ is a joke; the read-only part is not. Provided as is, without warranty, under the MIT licence.</p>
+      <p>Each person runs their own copy and is its only operator. The authors publish the code, run nothing, receive no data, and are not affiliated with Enable Banking, Anthropic or any bank.</p>
+      <p><strong>Bank™ is not a bank.</strong> The ™ is a joke; the read-only part is not. MIT licence, no warranty.</p>
     </div>
   </div>
 </section>
