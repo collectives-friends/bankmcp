@@ -47,7 +47,8 @@ Rules of thumb:
 Add the user's own rules below as `pattern → category` lines and apply them before the rules of thumb:
 
 ```
-# VISA PAYMENTS LIMITED → income (Airbnb payouts)
+# STRIPE PAYOUT → income (client invoices)
+# ACME INSURANCE → insurance
 ```
 
 ## Monthly review format

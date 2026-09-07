@@ -42,7 +42,7 @@ test("credit_missing_by fires on the deadline", () => {
 });
 
 test("credit_matching matches description too and respects min_amount", () => {
-  const w = watch({ type: "credit_matching", match: "airbnb", min_amount: 1000 });
-  const txs = [{ ...tx("a", 2500, "VISA PAYMENTS LIMITED"), description: "Airbnb payout" }, { ...tx("b", 50, "VISA PAYMENTS LIMITED"), description: "Airbnb refund" }];
+  const w = watch({ type: "credit_matching", match: "payout", min_amount: 1000 });
+  const txs = [{ ...tx("a", 2500, "STRIPE PAYMENTS"), description: "Stripe payout" }, { ...tx("b", 50, "STRIPE PAYMENTS"), description: "Stripe refund" }];
   assert.equal(evaluate(account, [w], undefined, txs).length, 1);
 });

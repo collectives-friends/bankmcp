@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Bank™ · Your bank, in Claude</title>
+<meta name="description" content="Bank™ is open-source software you run yourself that lets you ask Claude about your own bank accounts. Read-only, self-hosted, on open banking.">
+<meta property="og:title" content="Bank™ · Your bank, in Claude">
+<meta property="og:description" content="Ask Claude about your balance, your spending, whether the invoice landed. Read-only, on your own server, through open banking. Open source.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23141414'/%3E%3Ctext x='32' y='44' font-family='-apple-system,Helvetica,Arial,sans-serif' font-weight='900' font-size='36' text-anchor='middle' fill='%23f4f3ef'%3EB%3C/text%3E%3C/svg%3E">
+<style>
+  :root{--bg:#f4f3ef;--card:#fff;--ink:#141414;--muted:#6f6e69;--line:#e6e4dd;--ok:#1f7a4d;--bubble:#ecebe5}
+  @media (prefers-color-scheme:dark){:root{--bg:#111110;--card:#1b1b1a;--ink:#f2f1ec;--muted:#9b9a94;--line:#2c2b29;--ok:#5cc08a;--bubble:#262523}}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font:17px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px}
+  header{display:flex;align-items:center;justify-content:space-between;padding:28px 0}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em;text-decoration:none}
+  .mark{width:30px;height:30px;border-radius:9px;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:16px;font-weight:900}
+  nav a{font-size:15px;color:var(--muted);text-decoration:none;margin-left:22px}
+  nav a:hover{color:var(--ink)}
+  .hero{padding:56px 0 28px}
+  h1{font-size:clamp(40px,7vw,64px);line-height:1.02;letter-spacing:-.035em;margin:0 0 20px}
+  .lead{font-size:clamp(18px,2.4vw,22px);color:var(--muted);margin:0 0 30px;max-width:600px}
+  .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-block;font-weight:700;padding:13px 20px;border-radius:12px;text-decoration:none;border:1px solid var(--ink);background:var(--ink);color:var(--bg)}
+  .btn.ghost{background:transparent;color:var(--ink)}
+  .btn:hover{opacity:.9}
+  .chat{margin:44px 0 0;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .msg{max-width:86%;padding:12px 16px;border-radius:16px;margin:0 0 12px;font-size:16px}
+  .me{margin-left:auto;background:var(--ink);color:var(--bg);border-bottom-right-radius:6px}
+  .ai{background:var(--bubble);border-bottom-left-radius:6px}
+  .ai b{font-variant-numeric:tabular-nums}
+  .tools{font-size:12.5px;color:var(--muted);margin:-4px 0 12px 4px}
+  .tools code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace}
+  section{padding:56px 0 8px}
+  h2{font-size:clamp(26px,4vw,34px);letter-spacing:-.025em;line-height:1.15;margin:0 0 10px}
+  .sub{color:var(--muted);margin:0 0 28px;max-width:600px}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+  .step .n{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px}
+  .step h3{margin:0 0 6px;font-size:18px;letter-spacing:-.01em}
+  .step p{margin:0;color:var(--muted);font-size:15px}
+  .asks{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 14px;list-style:none;padding:0;margin:0}
+  .asks li{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:16px}
+  .asks li::before{content:"“";color:var(--muted)}.asks li::after{content:"”";color:var(--muted)}
+  .facts{display:grid;grid-template-columns:repeat(2,1fr);gap:22px 28px}
+  .fact h3{margin:0 0 6px;font-size:18px;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+  .fact h3::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--ok);flex:none}
+  .fact p{margin:0;color:var(--muted);font-size:15.5px}
+  .fine{border-top:1px solid var(--line);margin-top:56px;padding:28px 0 40px;color:var(--muted);font-size:14.5px}
+  .fine p{margin:0 0 10px;max-width:680px}
+  footer{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:14px;color:var(--muted);padding:0 0 48px}
+  footer a{text-decoration:none}footer a:hover{text-decoration:underline}
+  @media (max-width:640px){.steps,.asks,.facts{grid-template-columns:1fr}nav a{margin-left:14px}.msg{max-width:94%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="#"><span class="mark">B</span><span>Bank™</span></a>
+    <nav><a href="#how">How it works</a><a href="#ask">What you can ask</a><a href="https://github.com/noskillish/bank">GitHub</a></nav>
+  </header>
+
+  <div class="hero">
+    <h1>Your bank,<br>in Claude.</h1>
+    <p class="lead">Ask about your balance, your spending, whether the invoice landed. Read-only, on a server you run, through open banking. Open source.</p>
+    <div class="cta">
+      <a class="btn" href="https://github.com/noskillish/bank#setup">Set it up</a>
+      <a class="btn ghost" href="https://github.com/noskillish/bank">View the code</a>
+    </div>
+
+    <div class="chat" aria-label="Example conversation">
+      <div class="msg me">Has Acme paid the invoice yet?</div>
+      <div class="tools">Bank™ · <code>get_transactions</code> Main · last 14 days</div>
+      <div class="msg ai">Not yet. Nothing from Acme on Main since 1 September; the last credit was your salary on the 31st, <b>42,500</b>. Want me to tell you when it lands?</div>
+      <div class="msg me">Yes.</div>
+      <div class="tools">Bank™ · <code>create_watch</code> credit matching “Acme”</div>
+      <div class="msg ai">Done. I'll check a few times a day and message you the moment it arrives.</div>
+    </div>
+  </div>
+
+  <section id="how">
+    <h2>How it works</h2>
+    <p class="sub">Three parties, and you own the one in the middle. Claude talks to your server. Your server talks to your bank through Enable Banking, a licensed open-banking provider covering 2,700+ European banks.</p>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h3>Deploy your own copy</h3><p>One container, one small volume, on Railway, Fly or your own box. A fresh server shows a setup page; no terminal needed.</p></div>
+      <div class="step"><div class="n">2</div><h3>Register at Enable Banking</h3><p>Free. You get an application and a private key that never leaves your server. The setup page shows every value their form asks for.</p></div>
+      <div class="step"><div class="n">3</div><h3>Connect Claude and your bank</h3><p>Add your server as a connector, sign in once with your password, then say “connect my bank” and log in at the bank as usual.</p></div>
+    </div>
+  </section>
+
+  <section id="ask">
+    <h2>What you can ask</h2>
+    <p class="sub">Plain questions, answered from the real numbers. Claude sees the same balances and transactions your banking app shows.</p>
+    <ul class="asks">
+      <li>What's my balance?</li>
+      <li>How much did we spend on groceries in May?</li>
+      <li>Which subscriptions am I paying for, and what do they cost per year?</li>
+      <li>Has the rent gone out?</li>
+      <li>Tell me if my balance drops below 5,000.</li>
+      <li>What have I paid the cleaner on MobilePay this year?</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>It never moves money.</h2>
+    <p class="sub">Bank™ is built so the worst case is boring.</p>
+    <div class="facts">
+      <div class="fact"><h3>Read-only, by design</h3><p>There are no payment tools and there never will be. Bank consents are read-only, and the server has no code path that could initiate a transfer.</p></div>
+      <div class="fact"><h3>Your server, your key</h3><p>The private key and the bank consents live on a server only you control. No third party, no shared service, no account to sign up for.</p></div>
+      <div class="fact"><h3>Nothing stored</h3><p>Balances and transactions are fetched when you ask and never written to disk. The only state is which banks you connected and your login.</p></div>
+      <div class="fact"><h3>One password, one alarm, one kill switch</h3><p>Every sign-in is logged and can message you. Changing the password logs every client out. Revoking at your bank ends it all.</p></div>
+    </div>
+  </section>
+
+  <div class="fine">
+    <p><b>Bank™ is software, not a service.</b> There is no hosted Bank™. Each person deploys their own copy and is the sole operator of it: they register their own Enable Banking application, accept its terms themselves, and are responsible for their own hosting and security. The authors publish the code and nothing else, receive no data, and are not affiliated with Enable Banking, Anthropic or any bank.</p>
+    <p>Bank™ is not a bank, holds no money, and gives no financial advice. The ™ is a joke; the read-only part is not. Provided as is, without warranty, under the MIT licence.</p>
+  </div>
+
+  <footer>
+    <a href="https://github.com/noskillish/bank">GitHub</a>
+    <a href="https://github.com/noskillish/bank#setup">Setup guide</a>
+    <a href="https://enablebanking.com">Enable Banking</a>
+    <a href="https://github.com/noskillish/bank/blob/main/LICENSE">MIT licence</a>
+  </footer>
+</div>
+</body>
+</html>

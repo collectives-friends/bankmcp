@@ -25,7 +25,7 @@ export function applySetup(input: SetupInput): string | null {
   const password = input.password ?? "";
   const country = (input.country ?? "").trim().toUpperCase();
 
-  if (!looksLikeUuid.test(appId)) return "The application id should be a UUID like 4af12dc9-1937-47a1-90d6-4570b65b4367. It is shown on the application in the Enable Banking Control Panel.";
+  if (!looksLikeUuid.test(appId)) return "The application id should be a UUID like 8d3f6c2a-1b4e-4f7a-9c2d-5e6f7a8b9c0d. It is shown on the application in the Enable Banking Control Panel.";
   if (!pem.includes("PRIVATE KEY")) return "That does not look like the key file. Choose the .pem file that downloaded when you registered the application.";
   try {
     createPrivateKey(pem);
