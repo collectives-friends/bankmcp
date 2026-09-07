@@ -81,13 +81,13 @@ export function connectedPage(session: { aspsp: { name: string }; access: { vali
     `${session.aspsp.name} is linked`,
     `<p>${n} account${n === 1 ? "" : "s"} shared, read-only.</p>
      <ul class="rows">${session.accounts.map((a) => `<li><span>${esc([a.name, a.product].filter(Boolean).join(" · ") || a.uid)}</span><span class="r">${esc(a.currency)}</span></li>`).join("")}</ul>
-     <p class="muted">Consent valid until ${esc(fmtDate(session.access.valid_until))}. You can close this tab and go back to Claude.</p>`,
+     <p class="muted">Consent valid until ${esc(fmtDate(session.access.valid_until))}. You can close this tab and go back to your assistant.</p>`,
     { kind: "ok", pill: "Connected" },
   );
 }
 
 export function failedPage(message: string): string {
-  return shell("Bank not connected", `<p class="error">${esc(message)}</p><p class="muted">Go back to Claude and start again.</p>`, { kind: "error", pill: "Not connected" });
+  return shell("Bank not connected", `<p class="error">${esc(message)}</p><p class="muted">Go back to your assistant and start again.</p>`, { kind: "error", pill: "Not connected" });
 }
 
 export function signInFailedPage(message: string): string {
@@ -103,17 +103,17 @@ export function statusPage(input: { problems: string[]; mcpUrl: string; callback
     );
   }
   // Deliberately says nothing about which banks or accounts are connected:
-  // this page is reachable without a password. Ask consent_status in Claude.
+  // this page is reachable without a password. Ask consent_status through the connector.
   return shell(
     config.appName,
     `<p>Running. Two addresses to copy:</p>
      <p class="muted" style="margin-bottom:4px">Redirect URL for the application at Enable Banking</p><p><code>${esc(input.callbackUrl)}</code></p>
-     <p class="muted" style="margin-bottom:4px">Custom connector URL in Claude (sign in with the admin password)</p><p><code>${esc(input.mcpUrl)}</code></p>`,
+     <p class="muted" style="margin-bottom:4px">MCP connector URL for your assistant, Claude, ChatGPT, Cursor or another (sign in with the admin password)</p><p><code>${esc(input.mcpUrl)}</code></p>`,
     { kind: "ok", pill: "Running" },
   );
 }
 
-export const CONSENT_DESCRIPTION = `${config.appName} lets you ask Claude about your own accounts. It can read balances and transactions. It can never move money, and only you can use it. Revoke access at your bank at any time.`;
+export const CONSENT_DESCRIPTION = `${config.appName} lets you ask your AI assistant about your own accounts. It can read balances and transactions. It can never move money, and only you can use it. Revoke access at your bank at any time.`;
 
 export function setupPage(opts: { error?: string; values?: { app_id?: string; country?: string }; baseUrl?: string } = {}): string {
   const v = opts.values ?? {};
@@ -137,7 +137,7 @@ export function setupPage(opts: { error?: string; values?: { app_id?: string; co
        <textarea id="pem" name="pem" rows="3" placeholder="…or paste the contents of the .pem file here" spellcheck="false"></textarea>
        <label for="country">Country of your banks</label>
        <input id="country" name="country" maxlength="2" placeholder="DK" value="${esc(v.country ?? "")}" style="width:6em;text-transform:uppercase">
-       <label for="password">Password (12+ characters, used when connecting Claude)</label>
+       <label for="password">Password (12+ characters, used when connecting your assistant)</label>
        <input id="password" type="password" name="password" required minlength="12" autocomplete="new-password">
        <label for="password2">Repeat password</label>
        <input id="password2" type="password" name="password2" required minlength="12" autocomplete="new-password">

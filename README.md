@@ -1,11 +1,11 @@
 # BankMCP™
 
-**Your bank accounts, set free.** Ask Claude anything about them. Read-only, self-hosted, one user.
+**Your bank accounts, set free.** Ask your AI assistant anything about them. Read-only, self-hosted, one user. Works with Claude, ChatGPT, Mistral, Cursor, or a local model.
 
 BankMCP™ is not a bank. It is a small open-source server you host yourself
 (package name `bank-mcp`). It connects to your banks
 through [Enable Banking](https://enablebanking.com), which wraps 2,700+
-European banks in one PSD2 API, and exposes them to Claude as an MCP
+European banks in one PSD2 API, and exposes them to any MCP client as a
 connector. Read-only, no payments, no third party holding your data.
 
 > "Has the invoice from Acme been paid?" · "What did we spend on groceries in
@@ -15,11 +15,12 @@ connector. Read-only, no payments, no third party holding your data.
 ## How it works
 
 ```
-Claude ──OAuth──▶ your BankMCP™ server ──JWT──▶ Enable Banking ──PSD2──▶ your bank
+Your assistant ──OAuth──▶ your BankMCP™ server ──JWT──▶ Enable Banking ──PSD2──▶ your bank
 ```
 
-- **Claude** talks to your server as a custom connector. You sign in once with
-  a password; tokens handle the rest.
+- **Your assistant** (Claude, ChatGPT, Cursor, or any MCP client) talks to
+  your server as a connector. You sign in once with a password; tokens handle
+  the rest.
 - **Your server** holds the Enable Banking application key, the bank consents
   and your account ids. It never stores balances or transactions and sends no
   telemetry.
@@ -65,7 +66,8 @@ terms URLs, all pointing at your server. At
 
 Back on the setup page: paste the application id, choose the `.pem` file, pick
 a password of twelve characters or more. Everything is stored on the volume,
-and the page turns into a status page showing the connector URL for Claude.
+and the page turns into a status page showing the connector URL for your
+assistant.
 
 Prefer configuration by environment? Set these and the setup page never
 appears:
@@ -83,7 +85,7 @@ Optional: `NOTIFY_WEBHOOK_URL` for watch notifications and sign-in alerts (a
 Slack incoming webhook works). Full list in [.env.example](.env.example).
 `npm run check` verifies a configuration from a terminal.
 
-### 4. Add the connector in Claude
+### 4. Add the connector in your assistant
 
 In claude.ai (or the desktop app): **Settings → Connectors → Add custom
 connector**. Name it `BankMCP™`, paste `https://YOUR-HOST/mcp`, save, then click
@@ -98,14 +100,18 @@ claude mcp add --transport http bank https://YOUR-HOST/mcp
 
 then run `/mcp` inside Claude Code to sign in.
 
+Other MCP clients (ChatGPT, Mistral Le Chat, Cursor, VS Code) work the same
+way: add the URL as a remote MCP server, sign in with the password. If the
+client is hosted, add its domain to `ALLOWED_REDIRECT_HOSTS` first.
+
 ### 5. Connect your bank
 
-In Claude, say **"connect my bank"** (or use the `connect-bank` prompt). Claude
+In your assistant, say **"connect my bank"** (or use the `connect-bank` prompt). It
 looks up your bank, gives you a link, you log in at the bank and approve, and
-the accounts appear. Consents last up to 180 days; Claude tells you when one
+the accounts appear. Consents last up to 180 days; you are told when one
 is about to expire and the same conversation renews it.
 
-Give accounts labels ("Everyday", "Joint expenses", "Mortgage") when Claude
+Give accounts labels ("Everyday", "Joint expenses", "Mortgage") when it
 suggests them. Every tool accepts labels instead of ids.
 
 ## Going live with your own accounts
