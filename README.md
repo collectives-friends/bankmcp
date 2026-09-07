@@ -283,8 +283,12 @@ hosting, password and security.
 The authors publish the code and nothing else. They do not run any instance
 for others, receive no data, and are not affiliated with Enable Banking,
 Anthropic or any bank. BankMCP™ is not a bank, does not hold money, and gives no
-financial advice. The software is provided as is, without warranty of any
-kind, under the MIT licence below.
+financial advice.
+
+**Use at your own risk.** If you deploy it, you own that deployment and its
+security. The software is provided as is, without warranty of any kind, and
+the authors accept no liability for how it is used or for any loss that
+follows. MIT licence below.
 
 ## License
 

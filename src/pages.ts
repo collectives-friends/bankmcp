@@ -169,5 +169,5 @@ export const termsPage = () =>
   shell(
     "Terms",
     `<p>Personal software run by the person who deployed it, for their own non-commercial use, under Enable Banking's terms for individual use of their production environment. The operator is solely responsible for this instance.</p>
-     <p>The software is provided as is, without warranty of any kind, under the MIT licence. Its authors are not a party to the operator's agreements with Enable Banking or any bank.</p>`,
+     <p>Use at your own risk. The software is provided as is, without warranty of any kind, under the MIT licence. Its authors accept no liability for its use and are not a party to the operator's agreements with Enable Banking or any bank.</p>`,
   );
