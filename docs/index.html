@@ -156,7 +156,7 @@
     <a class="logo" href="#"><span class="mark">B</span>BankMCP™</a>
     <nav>
       <a href="#how">How it works</a>
-      <a href="#safe">Yours</a>
+      <a href="#safe">What it does</a>
       <a href="https://github.com/noskillish/bankmcp">GitHub</a>
     </nav>
   </div>
@@ -187,7 +187,7 @@
       <div class="msg me">Make me a monthly budget from the last three months.</div>
       <div class="who">Assistant</div>
       <div class="tool"><span class="dot"></span><code>get_transactions</code> · 5 accounts · June → August · 641 transactions</div>
-      <div class="msg ai">Here it is, built from what you actually spent. Eating out is the one to watch.</div>
+      <div class="msg ai">Here is a budget based on the last three months. Eating out is over.</div>
       <div class="art-wrap">
       <div class="artifact" aria-label="Example artifact">
       <div class="head"><h4>September budget</h4><span>Day 7 of 30 · Artifact</span></div>
@@ -204,7 +204,7 @@
         <div class="row"><div class="k">Subscriptions</div><div class="track"><div class="fill" style="width:68%"></div></div><div class="v">1,290 <span>/ 1,900</span></div></div>
         <div class="row"><div class="k">Everything else</div><div class="track"><div class="fill" style="width:29%"></div></div><div class="v">3,350 <span>/ 11,800</span></div></div>
       </div>
-      <div class="note">Illustrative. Budgets came from three months of real spending; the fill is this month so far, refreshed whenever you ask.</div>
+      <div class="note">Example numbers. The budget is based on three months of transactions; the bars show this month so far.</div>
       </div>
     </div>
   </div>
@@ -216,11 +216,11 @@
   <div class="container">
     <div class="eyebrow">How it works</div>
     <h2>Your assistant. Your server. Your bank.</h2>
-    <p class="section-subtitle">Your assistant talks to your server. Your server talks to your bank through Enable Banking. Nobody else.</p>
+    <p class="section-subtitle">Your assistant talks to your server. Your server talks to your bank through Enable Banking.</p>
     <div class="steps">
-      <div class="step"><div class="n">01</div><h3>Deploy your own copy</h3><p>One container on Railway, Fly or your own box. A fresh server shows a setup page. No terminal.</p></div>
-      <div class="step"><div class="n">02</div><h3>Register at Enable Banking</h3><p>Free. You get a private key that never leaves your server. The setup page shows every value their form asks for.</p></div>
-      <div class="step"><div class="n">03</div><h3>Connect your assistant and your bank</h3><p>Add your server as a connector in any MCP client, sign in once, then say <code>connect my bank</code> and log in at the bank as usual.</p></div>
+      <div class="step"><div class="n">01</div><h3>Deploy your own copy</h3><p>One container on Railway, Fly or your own machine. A new server shows a setup page in the browser.</p></div>
+      <div class="step"><div class="n">02</div><h3>Register at Enable Banking</h3><p>Free. You get an application and a private key. The setup page shows the values their form asks for.</p></div>
+      <div class="step"><div class="n">03</div><h3>Connect your assistant and your bank</h3><p>Add your server as a connector, sign in with your password, then say <code>connect my bank</code> and log in at your bank.</p></div>
     </div>
   </div>
 </section>
@@ -230,14 +230,14 @@
 <section id="safe">
   <div class="container">
     <div class="eyebrow">Yours</div>
-    <h2>Yours. <span class="dim">Not tied to anyone.</span></h2>
+    <h2>What it does and does not do.</h2>
     <div class="facts">
-      <div class="fact"><h3>Looks, never touches</h3><p>Read-only by design. There are no payment tools, so there is nothing to worry about.</p></div>
-      <div class="fact"><h3>Lives where you put it</h3><p>Runs on your server with your key. Nobody in between.</p></div>
-      <div class="fact"><h3>Remembers nothing</h3><p>Every answer is fetched fresh from the bank. Nothing is kept.</p></div>
-      <div class="fact"><h3>Any assistant</h3><p>Built on MCP, the open standard. Claude, ChatGPT, Mistral, Cursor, or a model on your own machine. Switch any time; your data never moves.</p></div>
-      <div class="fact"><h3>Any bank in Europe</h3><p>2,700+ banks through Enable Banking, one consent flow, no contract for your own accounts.</p></div>
-      <div class="fact"><h3>Easy to walk away from</h3><p>Change the password or revoke at your bank, and that's that. No account to close.</p></div>
+      <div class="fact"><h3>Read-only</h3><p>It can read balances and transactions. It cannot move money. There are no payment tools.</p></div>
+      <div class="fact"><h3>Runs on your server</h3><p>The key and the bank consents stay on a server you control.</p></div>
+      <div class="fact"><h3>Stores nothing</h3><p>Balances and transactions are fetched when you ask and not saved.</p></div>
+      <div class="fact"><h3>Any assistant</h3><p>Standard MCP. Works with Claude, ChatGPT, Mistral, Cursor, or a local model. You can switch without changing anything on the server.</p></div>
+      <div class="fact"><h3>Any European bank</h3><p>2,700+ banks through Enable Banking. No contract is needed for your own accounts.</p></div>
+      <div class="fact"><h3>Easy to stop</h3><p>Change the password, revoke the consent at your bank, or delete the server.</p></div>
     </div>
   </div>
 </section>
@@ -245,15 +245,15 @@
 <section id="not">
   <div class="container">
     <div class="eyebrow">Open source</div>
-    <h2>Software you run. <span class="dim">Not a service you join.</span></h2>
-    <p class="section-subtitle">BankMCP™ is a repo, not a company. You deploy your own copy and it answers only to you. MIT licence.</p>
-    <p class="section-subtitle" style="margin-top:1rem">Built on MCP, the open standard, so it is not tied to one assistant. Tested with Claude and Ollama; the rest follow the same standard. Prefer no AI vendor at all? It also runs with a local model through Ollama, so a transaction never leaves your machine except to reach your bank. Early days and slower, but it works. <a href="https://github.com/noskillish/bankmcp#local-models-experimental">Recipe in the README.</a></p>
+    <h2>Software, not a service.</h2>
+    <p class="section-subtitle">There is no hosted version. You deploy your own copy and you are the only user. MIT licence.</p>
+    <p class="section-subtitle" style="margin-top:1rem">It also runs with a local model through Ollama. Then no AI vendor sees your data. This is experimental and slow. <a href="https://github.com/noskillish/bankmcp#local-models-experimental">Instructions in the README.</a></p>
   </div>
 </section>
 
 <footer>
   <div class="container">
-    <p>BankMCP™ is not a bank and gives no financial advice. Independent of Enable Banking, Anthropic and any bank. MIT, as is.</p>
+    <p>BankMCP™ is not a bank and does not give financial advice. Not affiliated with Enable Banking, Anthropic or any bank. MIT licence.</p>
     <nav>
       <a href="https://github.com/noskillish/bankmcp">GitHub</a>
       <a href="https://github.com/noskillish/bankmcp#setup">Setup guide</a>
