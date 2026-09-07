@@ -220,9 +220,12 @@ bank either way; that part is regulated and unavoidable.
   Discovery, dynamic client registration and PKCE come from the MCP SDK;
   tokens are stored hashed; five wrong passwords lock an address out for
   fifteen minutes.
-- State is one JSON file in `DATA_DIR`: consents, account ids, watches and
-  OAuth tokens. Back it up if you care about not re-consenting; delete it to
-  forget everything.
+- State is one JSON file in `DATA_DIR`: consents, account ids, watches (with
+  the ids of transactions that already fired) and OAuth tokens. Balances and
+  transactions are never written to disk. Your assistant keeps the
+  conversation as any chat does, and a watch notification carries the matched
+  transaction to your webhook. Back the file up if you care about not
+  re-consenting; delete it to forget everything.
 - Only clients that redirect back to a known MCP client domain (Claude,
   ChatGPT, Mistral, Cursor, VS Code) or localhost can register
   (`ALLOWED_REDIRECT_HOSTS`), so a phishing link cannot route your sign-in to
