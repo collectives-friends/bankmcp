@@ -1,7 +1,7 @@
 {
   "name": "bank-mcp",
   "version": "0.1.0",
-  "description": "Bank™: self-hosted MCP server giving Claude read-only access to your own bank accounts via open banking (Enable Banking, PSD2)",
+  "description": "Bank\u2122: self-hosted MCP server giving Claude read-only access to your own bank accounts via open banking (Enable Banking, PSD2)",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -15,7 +15,8 @@
     "hash-password": "node src/cli.ts hash-password",
     "watch": "node --env-file-if-exists=.env src/cli.ts watch",
     "test": "node --test test/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "chat": "node --env-file-if-exists=.env scripts/local-chat.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

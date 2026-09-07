@@ -136,8 +136,8 @@ service to others. This project does not change those terms.
 | `get_transactions` | signed amounts, one counterparty, one description; paginated |
 | `create_watch`, `list_watches`, `delete_watch`, `check_watches` | background rules with webhook notifications |
 
-**Prompts**: `connect-bank`, `monthly-summary`, `subscription-audit`,
-`unusual-transactions`.
+**Prompts**: `connect-bank`, `monthly-summary`, `build-budget`,
+`subscription-audit`, `unusual-transactions`.
 
 **Watches** run on the server. Rules: balance below or above an amount, a
 single debit over an amount, an incoming or outgoing payment matching a name,
@@ -188,6 +188,24 @@ Production applications require an https redirect URL even locally. Create a
 certificate with [mkcert](https://github.com/FiloSottile/mkcert), set
 `TLS_CERT_PATH`, `TLS_KEY_PATH` and `BASE_URL=https://localhost:8080`, and
 register `https://localhost:8080/callback` as a redirect URL.
+
+## Local models (experimental)
+
+The server does not care which model asks. `npm run chat` bridges an
+[Ollama](https://ollama.com) model to the same tools over stdio, so no AI
+vendor ever sees a transaction:
+
+```bash
+ollama pull qwen3:8b
+npm run chat -- "what's my balance?"
+```
+
+Measured on a MacBook Air with 24 GB: correct per-account balances, a wrong
+total, ten minutes per answer. An 8B model is not yet trustworthy with money;
+a 30B-class model on a machine with a real GPU is where it gets useful. Any
+MCP client with tool calling (LM Studio, Goose, Jan) can also point at
+`node src/stdio.ts` directly. Enable Banking still sits between you and the
+bank either way; that part is regulated and unavoidable.
 
 ## Security notes
 

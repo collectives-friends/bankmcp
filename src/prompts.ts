@@ -99,4 +99,29 @@ ${accountsContext()}`,
 ${accountsContext()}`,
       ),
   );
+  server.registerPrompt(
+    "build-budget",
+    {
+      title: "Build a budget",
+      description: "Turn the last months of real spending into a monthly budget per category, with a savings target and the levers that get there.",
+      argsSchema: {
+        months: z.string().optional().describe("Months of history to base it on, default 3"),
+        savings_target: z.string().optional().describe("Amount or percentage of income to save each month, optional"),
+      },
+    },
+    ({ months, savings_target }) =>
+      text(
+        `Build me a monthly budget from my real spending over the last ${months ?? "3"} full months${savings_target ? `, aiming to save ${savings_target} per month` : ""}.
+
+1. Call list_accounts. Use the current accounts; note loans and mortgages separately.
+2. Call get_transactions for each current account over the whole period (follow continuation keys). Exclude transfers between my own accounts (same amount, opposite sign, within two days, across two of my accounts).
+3. Work out monthly income (salary and other regular credits) and categorise spending. Use a categorisation skill or rules file if one is available; otherwise sensible categories (housing, utilities, groceries, eating out, transport, subscriptions, shopping, health, kids, travel, insurance, other).
+4. For each category give the monthly average and the range, and mark it fixed (rent, mortgage, insurance, subscriptions) or variable. Add a monthly reserve for bills that come quarterly or yearly.
+5. Propose the budget: fixed items at their actual level, variable items at a realistic target, and show what the total leaves for saving against income. If a savings target was given and the numbers do not reach it, say which two or three variable categories would have to move, and by how much.
+6. Present it as one table (category, average, proposed budget, fixed or variable), then the totals: income, budget, saving per month. Whole numbers in the account currency.
+7. Offer two follow-ups: create_watch on the everyday account with a balance floor, and turning the budget into an artifact page that I can check against each month.
+
+${accountsContext()}`,
+      ),
+  );
 }
