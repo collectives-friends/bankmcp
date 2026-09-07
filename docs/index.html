@@ -105,6 +105,15 @@
   .bars .v s { color: var(--muted); text-decoration: line-through; margin-right: 0.35rem; font-weight: 300; }
   .bars.budget { grid-template-columns: 9.5rem 1fr 6.5rem; }
   @media (max-width: 520px) { .bars.budget { grid-template-columns: 6.5rem 1fr 5.5rem; } }
+  .env { display: flex; flex-direction: column; gap: 0.7rem; }
+  .env .row { display: grid; grid-template-columns: 7.5rem 1fr 9rem; gap: 0.9rem; align-items: center; font-size: 0.8rem; }
+  .env .k { color: var(--ink); font-weight: 400; }
+  .env .track { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; }
+  .env .fill { height: 100%; border-radius: 4px; background: var(--ink); }
+  .env .fill.over { background: var(--accent); }
+  .env .v { text-align: right; font-variant-numeric: tabular-nums; font-size: 0.78rem; }
+  .env .v span { color: var(--muted); font-weight: 300; }
+  @media (max-width: 520px) { .env .row { grid-template-columns: 5.5rem 1fr 7rem; } }
   .artifact .note { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--muted); font-weight: 300; }
   @media (max-width: 520px) { .tiles { grid-template-columns: 1fr; } .bars { grid-template-columns: 5.5rem 1fr 3.5rem; } }
 
@@ -201,22 +210,21 @@
       <div class="tool"><span class="dot"></span><code>get_transactions</code> · 5 accounts · June → August · 641 transactions</div>
     </div>
     <div class="artifact" aria-label="Example artifact">
-      <div class="head"><h4>Monthly budget</h4><span>Artifact · from 3 months of real spending</span></div>
+      <div class="head"><h4>September budget</h4><span>Day 7 of 30 · Artifact</span></div>
       <div class="tiles">
-        <div class="tile"><div class="l">Income</div><div class="v">61,300</div><div class="d">per month, after tax</div></div>
-        <div class="tile"><div class="l">Budget</div><div class="v">42,000</div><div class="d">was 45,900 on average</div></div>
-        <div class="tile"><div class="l">Saves</div><div class="v">19,300</div><div class="d">32% of income</div></div>
+        <div class="tile"><div class="l">Left to spend</div><div class="v">28,150</div><div class="d">of 42,000 this month</div></div>
+        <div class="tile"><div class="l">Spent so far</div><div class="v">13,850</div><div class="d">on pace for 39,400</div></div>
+        <div class="tile"><div class="l">Saving</div><div class="v">19,300</div><div class="d">32% of income, on track</div></div>
       </div>
-      <div class="bars budget">
-        <div class="k">Housing <em>fixed</em></div><div class="b" style="width:100%"></div><div class="v">14,200</div>
-        <div class="k">Groceries</div><div class="b" style="width:42%"></div><div class="v"><s>6,850</s> 6,000</div>
-        <div class="k">Insurance <em>fixed</em></div><div class="b" style="width:23%"></div><div class="v">3,300</div>
-        <div class="k">Eating out</div><div class="b" style="width:18%"></div><div class="v"><s>3,900</s> 2,500</div>
-        <div class="k">Transport</div><div class="b" style="width:16%"></div><div class="v">2,300</div>
-        <div class="k">Subscriptions <em>fixed</em></div><div class="b" style="width:13%"></div><div class="v">1,900</div>
-        <div class="k">Everything else</div><div class="b" style="width:83%"></div><div class="v"><s>13,450</s> 11,800</div>
+      <div class="env">
+        <div class="row"><div class="k">Housing</div><div class="track"><div class="fill" style="width:100%"></div></div><div class="v">14,200 <span>/ 14,200 · paid</span></div></div>
+        <div class="row"><div class="k">Groceries</div><div class="track"><div class="fill" style="width:31%"></div></div><div class="v">1,860 <span>/ 6,000</span></div></div>
+        <div class="row"><div class="k">Eating out</div><div class="track"><div class="fill over" style="width:100%"></div></div><div class="v">2,640 <span>/ 2,500 · over</span></div></div>
+        <div class="row"><div class="k">Transport</div><div class="track"><div class="fill" style="width:22%"></div></div><div class="v">510 <span>/ 2,300</span></div></div>
+        <div class="row"><div class="k">Subscriptions</div><div class="track"><div class="fill" style="width:68%"></div></div><div class="v">1,290 <span>/ 1,900</span></div></div>
+        <div class="row"><div class="k">Everything else</div><div class="track"><div class="fill" style="width:29%"></div></div><div class="v">3,350 <span>/ 11,800</span></div></div>
       </div>
-      <div class="note">Illustrative. Struck numbers are the three-month average; the budget is what Claude proposed to hit the savings target.</div>
+      <div class="note">Illustrative. Budgets came from three months of real spending; the fill is this month so far, refreshed whenever you ask.</div>
     </div>
   </div>
 </section>
