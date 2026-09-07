@@ -58,8 +58,11 @@
   .tool .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 0.45rem; vertical-align: middle; }
 
   /* Animated dialogue, driven by the script at the end of the page */
-  .chat { opacity: 0; transition: opacity .5s ease; }
-  .chat.show { opacity: 1; }
+  .chat { opacity: 1; }
+  .replay-row { display: flex; justify-content: flex-end; margin-top: .75rem; min-height: 1.4rem; }
+  .replay { font: inherit; font-size: .78rem; color: var(--muted); background: none; border: 0; cursor: pointer; padding: .2rem .4rem; }
+  .replay:hover { color: var(--ink); }
+  [hidden] { display: none !important; }
   .chat > * { opacity: 0; transform: translateY(6px); transition: opacity .4s ease, transform .4s ease; }
   .chat > .on { opacity: 1; transform: none; }
   .msg.me.typing::after { content: ""; display: inline-block; width: 1px; height: .95em; background: #f5f5f3; margin-left: 2px; vertical-align: -2px; animation: caret .8s steps(1) infinite; }
@@ -200,6 +203,7 @@
       </div>
     </div>
   </div>
+  <div class="replay-row"><button type="button" class="replay" id="replay" hidden>Replay ↻</button></div>
 </div>
 </div>
 
@@ -287,9 +291,12 @@
       for (const ch of full) { el.textContent += ch; await wait(ch === " " ? 55 : 38); }
       await wait(250); el.classList.remove("typing");
     };
+    const replay = document.getElementById("replay");
+    let running = false;
     const run = async () => {
+      if (running) return; running = true; replay.hidden = true;
       items.forEach((el) => { el.classList.remove("on", "grow", "typing"); if (texts.has(el)) el.textContent = texts.get(el); });
-      chat.scrollTop = 0; chat.classList.add("show");
+      chat.scrollTop = 0;
       await wait(400);
       for (const el of items) {
         if (el.classList.contains("who")) { reveal(el); continue; }
@@ -303,11 +310,10 @@
         }
         reveal(el); await wait(1100);
       }
-      await wait(5500);
-      chat.classList.remove("show");
-      await wait(700);
-      run();
+      await wait(1200);
+      replay.hidden = false; running = false;
     };
+    replay.addEventListener("click", run);
     run();
   })();
 </script>
