@@ -129,9 +129,15 @@
   .env .fill.over { background: var(--accent); }
   .env .v { text-align: right; font-variant-numeric: tabular-nums; font-size: 0.78rem; }
   .env .v span { color: var(--muted); font-weight: 300; }
-  @media (max-width: 520px) { .env .row { grid-template-columns: 5.5rem 1fr 7rem; } }
+  @media (max-width: 640px) {
+    .env .row { grid-template-columns: 1fr auto; grid-template-areas: "k v" "track track"; gap: 0.4rem 0.75rem; }
+    .env .k { grid-area: k; } .env .v { grid-area: v; } .env .track { grid-area: track; }
+    .tiles { grid-template-columns: 1fr; gap: 0.5rem; }
+    .tile { padding: 0.75rem 0.9rem; } .tile .v { font-size: 1.1rem; }
+    .artifact { padding: 1rem; } .artifact .head { flex-direction: column; gap: 0.2rem; margin-bottom: 1rem; }
+    .chat { padding: 1rem; height: 560px; } .msg { max-width: 92%; }
+  }
   .artifact .note { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--muted); font-weight: 300; }
-  @media (max-width: 520px) { .tiles { grid-template-columns: 1fr; } .bars { grid-template-columns: 5.5rem 1fr 3.5rem; } }
 
   .fine { font-size: 0.82rem; color: var(--dim); font-weight: 300; line-height: 1.65; max-width: 680px; }
   .fine p + p { margin-top: 0.85rem; } .fine strong { color: var(--ink); font-weight: 500; }
@@ -150,7 +156,6 @@
     <a class="logo" href="#"><span class="mark">B</span>BankMCP™</a>
     <nav>
       <a href="#how">How it works</a>
-      <a href="#ask">What you can ask</a>
       <a href="#safe">Yours</a>
       <a href="https://github.com/noskillish/bankmcp">GitHub</a>
     </nav>
@@ -210,7 +215,7 @@
 <section id="how">
   <div class="container">
     <div class="eyebrow">How it works</div>
-    <h2>Three parties. <span class="dim">You own the one in the middle.</span></h2>
+    <h2>Your assistant. Your server. Your bank.</h2>
     <p class="section-subtitle">Your assistant talks to your server. Your server talks to your bank through Enable Banking. Nobody else.</p>
     <div class="steps">
       <div class="step"><div class="n">01</div><h3>Deploy your own copy</h3><p>One container on Railway, Fly or your own box. A fresh server shows a setup page. No terminal.</p></div>
@@ -220,23 +225,6 @@
   </div>
 </section>
 
-<section id="ask">
-  <div class="container">
-    <div class="eyebrow">What you can ask</div>
-    <h2>Plain questions. <span class="dim">Real numbers.</span></h2>
-    <p class="section-subtitle">The same balances and transactions your banking app shows.</p>
-    <ul class="asks">
-      <li>What's my balance?</li>
-      <li>How much did we spend on groceries in May?</li>
-      <li>Make me a monthly budget from the last three months.</li>
-      <li>Which subscriptions am I paying for, and what do they cost a year?</li>
-      <li>Has the rent gone out?</li>
-      <li>Tell me if my balance drops below 5,000.</li>
-      <li>Build me a spending dashboard for August.</li>
-      <li>Anything unusual this month?</li>
-    </ul>
-  </div>
-</section>
 
 
 <section id="safe">
