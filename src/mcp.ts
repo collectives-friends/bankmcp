@@ -9,7 +9,7 @@ export function createServer(): McpServer {
     { name: "bank", version: VERSION },
     {
       instructions: [
-        "Read-only access to the owner's own bank accounts via Enable Banking (PSD2). There are no payment tools.",
+        "Read-only access to the owner's own bank accounts via Enable Banking (PSD2). It has no payment tools.",
         "Accounts can be referred to by uid or by their label. Call list_accounts first when unsure.",
         "Transaction amounts are signed: negative is money out. Use the `booked` balance for totals and net worth; `available` may include credit lines.",
         "Banks return a limited history (often 90 days, some up to 2 years). If a date range comes back empty, say so rather than assuming there were no transactions.",

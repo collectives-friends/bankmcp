@@ -22,7 +22,7 @@ Your assistant ──OAuth──▶ your BankMCP™ server ──JWT──▶ En
   your server as a connector. You sign in once with a password; tokens handle
   the rest.
 - **Your server** holds the Enable Banking application key, the bank consents
-  and your account ids. It never stores balances or transactions and sends no
+  and your account ids. It does not store balances or transactions and sends no
   telemetry.
 - **Enable Banking** is the licensed provider. You log in at your bank's own
   site to approve access; nobody sees your bank credentials.
@@ -69,7 +69,7 @@ a password of twelve characters or more. Everything is stored on the volume,
 and the page turns into a status page showing the connector URL for your
 assistant.
 
-Prefer configuration by environment? Set these and the setup page never
+Prefer configuration by environment? Set these and the setup page does not
 appears:
 
 | Variable | Value |
@@ -123,7 +123,7 @@ for individual non-commercial use. After registering a Production application:
 
 1. On the (Inactive) application click **Activate by linking accounts**.
 2. Log in at your bank and approve. Repeat for each bank you want.
-3. The application becomes active and the API only ever returns accounts you
+3. The application becomes active and the API returns only the accounts you
    linked this way.
 
 Read the *Restriction of Use* section of Enable Banking's
@@ -200,7 +200,7 @@ register `https://localhost:8080/callback` as a redirect URL.
 
 The server does not care which model asks. `npm run chat` bridges an
 [Ollama](https://ollama.com) model to the same tools over stdio, so no AI
-vendor ever sees a transaction:
+vendor sees a transaction:
 
 ```bash
 ollama pull qwen3:8b
@@ -222,13 +222,13 @@ bank either way; that part is regulated and unavoidable.
   fifteen minutes.
 - State is one JSON file in `DATA_DIR`: consents, account ids, watches (with
   the ids of transactions that already fired) and OAuth tokens. Balances and
-  transactions are never written to disk. Your assistant keeps the
+  transactions are not written to disk. Your assistant keeps the
   conversation as any chat does, and a watch notification carries the matched
   transaction to your webhook. Back the file up if you care about not
   re-consenting; delete it to forget everything.
 - Only clients that redirect back to a known MCP client domain (Claude,
   ChatGPT, Mistral, Cursor, VS Code) or localhost can register
-  (`ALLOWED_REDIRECT_HOSTS`), so a phishing link cannot route your sign-in to
+  (`ALLOWED_REDIRECT_HOSTS`), which stops a phishing link from routing your sign-in to
   another site. Using a client not on the list? Add its domain. The sign-in page also names the host you will
   be sent back to.
 - Anyone with the admin password can read your accounts. Use a long one.
@@ -237,8 +237,8 @@ bank either way; that part is regulated and unavoidable.
 - Changing `ADMIN_PASSWORD_HASH` (or `ADMIN_PASSWORD`) and restarting logs
   every client out. That is the kill switch. Revoking the consents at your
   bank, or deleting the state file, is the step beyond it.
-- There are no payment tools and none will be added. Payments need a
-  licensed PISP and a very different security model.
+- There are no payment tools. Payments need a licensed PISP and a very
+  different security model, so they are out of scope.
 
 ## Commands
 
@@ -274,7 +274,7 @@ plugin/               Claude Code plugin with the bank skill
 ## What this is, and is not
 
 BankMCP™ is software, not a service. There is no hosted BankMCP™, no account to sign
-up for, and nobody but you ever touches your server, your key or your bank
+up for, and nobody but you handles your server, your key or your bank
 consents. Each person who uses it deploys their own copy and is the sole
 operator of that copy: they register their own Enable Banking application,
 accept Enable Banking's terms themselves, and are responsible for their own

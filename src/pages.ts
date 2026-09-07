@@ -63,7 +63,7 @@ export function loginPage(opts: { requestId: string; clientName?: string; return
   const back = opts.returnTo ? `<p class="muted">After signing in you are sent back to <b>${esc(opts.returnTo)}</b>. Stop if that is not where you came from.</p>` : "";
   return shell(
     "Allow access?",
-    `<p>${who} wants read-only access to your bank accounts through this server. It can see balances and transactions. It cannot move money.</p>${back}
+    `<p>${who} wants read-only access to your bank accounts through this server. It reads balances and transactions. It has no payment tools.</p>${back}
      ${opts.error ? `<p class="error">${esc(opts.error)}</p>` : ""}
      <form method="post" action="/login">
        <input type="hidden" name="request" value="${esc(opts.requestId)}">
@@ -113,7 +113,7 @@ export function statusPage(input: { problems: string[]; mcpUrl: string; callback
   );
 }
 
-export const CONSENT_DESCRIPTION = `${config.appName} lets you ask your AI assistant about your own accounts. It can read balances and transactions. It can never move money, and only you can use it. Revoke access at your bank at any time.`;
+export const CONSENT_DESCRIPTION = `${config.appName} lets you ask your AI assistant about your own accounts. It reads balances and transactions. It has no payment tools, and only the holder of the password can use it. You can revoke access at your bank at any time.`;
 
 export function setupPage(opts: { error?: string; values?: { app_id?: string; country?: string }; baseUrl?: string } = {}): string {
   const v = opts.values ?? {};

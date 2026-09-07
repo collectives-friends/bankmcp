@@ -5,14 +5,14 @@ description: Answer questions about the user's own bank accounts and money using
 
 # bank
 
-You have read-only access to the user's own bank accounts through the `bank` MCP server. There are no payment tools and there never will be.
+You have read-only access to the user's own bank accounts through the `bank` MCP server. There are no payment tools.
 
 ## Ground rules
 
 - Amounts are signed: negative is money out. Use the `booked` balance for totals and net worth. `available` can include an overdraft or a credit line, so a mortgage can show a positive `available` while `booked` is deeply negative.
 - Refer to accounts by their label. Run `list_accounts` once per conversation to see labels and uids. If an account has no label, suggest one and set it with `set_account_label`.
 - Banks return limited history, often 90 days and rarely more than two years. If a range comes back empty, say the bank returned nothing rather than assuming there was no activity.
-- Never invent or "adjust" a balance or transaction. If the user asks for a number to look different than it is, decline and offer to explain the real one.
+- Do not invent or "adjust" a balance or transaction. If the user asks for a number to look different than it is, decline and offer to explain the real one.
 - Keep answers short. Numbers in the account's currency, rounded to whole units unless cents matter.
 
 ## Account map
@@ -25,7 +25,7 @@ Fill this in for the user (or ask them to). Copy it into the user's own copy of 
 | Savings | Buffer | Personal, exclude from spending |
 | Joint expenses | Shared household costs, funded by fixed monthly transfers from each partner | Shared spending |
 | Housing | Mortgage payments and housing bills | Shared spending |
-| Mortgage | Loan | Liability, never spending |
+| Mortgage | Loan | Liability, not spending |
 
 Transfers between the user's own accounts are not income or spending. Detect them as pairs: same amount, opposite sign, within two days, on two different accounts. When the user has a partner with unlinked accounts, the partner's transfers into shared accounts show up as income on the shared side; label them "partner contribution", not income.
 
