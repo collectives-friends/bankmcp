@@ -295,7 +295,12 @@
         if (el.classList.contains("who")) { reveal(el); continue; }
         if (el.classList.contains("me")) { await type(el); await wait(500); continue; }
         if (el.classList.contains("tool")) { await wait(300); reveal(el); await wait(900); continue; }
-        if (el.classList.contains("art-wrap")) { reveal(el); await wait(400); el.classList.add("grow"); continue; }
+        if (el.classList.contains("art-wrap")) {
+          // Final frame: align Claude's label at the top so the reply and the whole budget fit the window.
+          const label = items[items.indexOf(el) - 2];
+          el.classList.add("on"); chat.scrollTop = label.offsetTop - 24;
+          await wait(400); el.classList.add("grow"); continue;
+        }
         reveal(el); await wait(1100);
       }
       await wait(5500);
