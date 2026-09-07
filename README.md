@@ -1,6 +1,6 @@
 # BankMCP™
 
-**Your bank accounts, set free.** Ask your AI assistant anything about them. Read-only, self-hosted, one user. Works with Claude, ChatGPT, Mistral, Cursor, or a local model.
+**Your bank accounts set free.** Ask your AI assistant anything about them. Read-only, self-hosted, one user. Works with Claude, ChatGPT, Mistral, Cursor, or a local model.
 
 BankMCP™ is not a bank. It is a small open-source server you host yourself
 (package name `bank-mcp`). It connects to your banks
