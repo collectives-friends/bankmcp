@@ -1,6 +1,6 @@
 # BankMCP™
 
-**Your bank, in Claude.** Read-only, self-hosted, one user.
+**Your bank accounts, in Claude.** Read-only, self-hosted, one user.
 
 BankMCP™ is not a bank. It is a small open-source server you host yourself
 (package name `bank-mcp`). It connects to your banks
