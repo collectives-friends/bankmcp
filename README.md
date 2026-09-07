@@ -218,7 +218,8 @@ bank either way; that part is regulated and unavoidable.
   forget everything.
 - Only clients that redirect back to `claude.ai`, `claude.com` or localhost
   can register (`ALLOWED_REDIRECT_HOSTS`), so a phishing link cannot route
-  your sign-in to another site. The sign-in page also names the host you will
+  your sign-in to another site. Using another MCP client, such as ChatGPT or
+  Cursor? Add its domain to that list; the server itself is standard MCP. The sign-in page also names the host you will
   be sent back to.
 - Anyone with the admin password can read your accounts. Use a long one.
   Every successful sign-in is logged and, if `NOTIFY_WEBHOOK_URL` is set,
