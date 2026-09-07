@@ -84,7 +84,11 @@
   .fact p { font-size: 0.85rem; color: var(--dim); font-weight: 300; line-height: 1.55; }
 
   /* Artifact mock */
-  .artifact { margin-top: 2.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
+  .lead-in { margin-top: 2.5rem; }
+  .lead-in .who { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 0 0 0.35rem; }
+  .lead-in .who.r { text-align: right; }
+  .lead-in .tool { margin: 0 0 0.75rem 0.25rem; }
+  .artifact { margin-top: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
   .artifact .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.25rem; }
   .artifact .head h4 { font-size: 0.95rem; font-weight: 500; letter-spacing: -0.01em; }
   .artifact .head span { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
@@ -185,8 +189,14 @@
     <div class="eyebrow">Artifacts</div>
     <h2>Ask for a page, <span class="dim">not just an answer.</span></h2>
     <p class="section-subtitle">Say “build me a spending dashboard for August” and Claude turns the numbers into an artifact: a page you can keep, filter and come back to. The data still comes straight from your server, and it is stored nowhere else.</p>
+    <div class="lead-in">
+      <div class="who r">You</div>
+      <div class="msg me">Build me a spending dashboard for August.</div>
+      <div class="who">Claude</div>
+      <div class="tool"><span class="dot"></span><code>get_transactions</code> · 5 accounts · 2026-08-01 → 2026-08-31 · 214 transactions</div>
+    </div>
     <div class="artifact" aria-label="Example artifact">
-      <div class="head"><h4>August</h4><span>Artifact · built from 214 transactions</span></div>
+      <div class="head"><h4>August</h4><span>Artifact · built by Claude</span></div>
       <div class="tiles">
         <div class="tile"><div class="l">Income</div><div class="v">61,300</div><div class="d">salary + 1 payout</div></div>
         <div class="tile"><div class="l">Spending</div><div class="v">38,450</div><div class="d">−6% vs July</div></div>
