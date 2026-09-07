@@ -154,7 +154,7 @@ app.get("/callback", async (req, res) => {
   const failed = (msg: string) => res.status(400).type("html").send(failedPage(msg));
 
   if (error || !code) return void failed(error_description || error || "The bank did not return an authorization code.");
-  if (!pending) return void failed("Unknown or expired authorization. Start again from Claude.");
+  if (!pending) return void failed("Unknown or expired authorization. Start again from your assistant.");
 
   try {
     const session = await eb.createSession(code);

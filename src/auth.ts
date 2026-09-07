@@ -137,7 +137,7 @@ export class SingleUserProvider implements OAuthServerProvider {
     }
 
     const pending = this.pendingLogins.get(requestId);
-    if (!pending) return { error: "This sign-in page has expired or the server restarted. Go back to Claude, click Connect again, and enter the password within 30 minutes." };
+    if (!pending) return { error: "This sign-in page has expired or the server restarted. Go back to your assistant, click Connect again, and enter the password within 30 minutes." };
 
     if (!verifyPassword(password)) {
       pending.attempts += 1;

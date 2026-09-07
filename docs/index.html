@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BankMCP™ · Your bank accounts, set free.</title>
-<meta name="description" content="BankMCP™ is open-source software you run yourself that lets you ask Claude about your own bank accounts. Read-only, self-hosted, on open banking.">
+<meta name="description" content="BankMCP™ is open-source software you run yourself that lets you ask your AI assistant about your own bank accounts. Read-only, self-hosted, on open banking.">
 <meta property="og:title" content="BankMCP™ · Your bank accounts, set free.">
-<meta property="og:description" content="Ask Claude about your balance, your spending, whether the invoice landed. Read-only, on a server you run, through open banking. Open source.">
+<meta property="og:description" content="Ask your assistant about your balance, your spending, whether the invoice landed. Read-only, on a server you run, through open banking. Open source.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://noskillish.github.io/bankmcp/">
 <meta name="twitter:card" content="summary">
@@ -160,7 +160,7 @@
 <div class="hero">
   <div class="container">
     <h1>Your bank accounts,<br><span class="dim">set free.</span></h1>
-    <p class="subtitle">Every account, every transaction, any question. Read-only, on a server you run. Works with Claude or any MCP client, hosted or local.</p>
+    <p class="subtitle">Every account, every transaction, any question. Read-only, on a server you run. Works with any MCP client: Claude, ChatGPT, Mistral, Cursor, or a local model.</p>
     <div class="cta-row">
       <a class="btn btn-primary" href="https://github.com/noskillish/bankmcp#setup">Set it up →</a>
       <a class="btn btn-secondary" href="https://github.com/noskillish/bankmcp/tree/main/src">View the code</a>
@@ -170,17 +170,17 @@
     <div class="chat" aria-label="Example conversation" id="demo">
       <div class="who r">You</div>
       <div class="msg me">Has Acme paid the invoice yet?</div>
-      <div class="who">Claude</div>
+      <div class="who">Assistant</div>
       <div class="tool"><span class="dot"></span><code>get_transactions</code> · Main · last 14 days</div>
       <div class="msg ai">Not yet. Nothing from Acme since 1 September. Want me to tell you when it lands?</div>
       <div class="who r">You</div>
       <div class="msg me">Yes.</div>
-      <div class="who">Claude</div>
+      <div class="who">Assistant</div>
       <div class="tool"><span class="dot"></span><code>create_watch</code> · credit matching “Acme”</div>
       <div class="msg ai">Done. I'll message you when it arrives.</div>
       <div class="who r">You</div>
       <div class="msg me">Make me a monthly budget from the last three months.</div>
-      <div class="who">Claude</div>
+      <div class="who">Assistant</div>
       <div class="tool"><span class="dot"></span><code>get_transactions</code> · 5 accounts · June → August · 641 transactions</div>
       <div class="msg ai">Here it is, built from what you actually spent. Eating out is the one to watch.</div>
       <div class="art-wrap">
@@ -215,7 +215,7 @@
     <div class="steps">
       <div class="step"><div class="n">01</div><h3>Deploy your own copy</h3><p>One container on Railway, Fly or your own box. A fresh server shows a setup page. No terminal.</p></div>
       <div class="step"><div class="n">02</div><h3>Register at Enable Banking</h3><p>Free. You get a private key that never leaves your server. The setup page shows every value their form asks for.</p></div>
-      <div class="step"><div class="n">03</div><h3>Connect your assistant and your bank</h3><p>Add your server as a connector in Claude or any MCP client, sign in once, then say <code>connect my bank</code> and log in at the bank as usual.</p></div>
+      <div class="step"><div class="n">03</div><h3>Connect your assistant and your bank</h3><p>Add your server as a connector in any MCP client, sign in once, then say <code>connect my bank</code> and log in at the bank as usual.</p></div>
     </div>
   </div>
 </section>
@@ -247,7 +247,7 @@
       <div class="fact"><h3>Looks, never touches</h3><p>Read-only by design. There are no payment tools, so there is nothing to worry about.</p></div>
       <div class="fact"><h3>Lives where you put it</h3><p>Runs on your server with your key. Nobody in between.</p></div>
       <div class="fact"><h3>Remembers nothing</h3><p>Every answer is fetched fresh from the bank. Nothing is kept.</p></div>
-      <div class="fact"><h3>Any assistant</h3><p>Built on MCP, the open standard. Claude today, ChatGPT, Mistral or Cursor tomorrow, or a model on your own machine. Switching costs nothing; your data never moves.</p></div>
+      <div class="fact"><h3>Any assistant</h3><p>Built on MCP, the open standard. Claude, ChatGPT, Mistral, Cursor, or a model on your own machine. Switch any time; your data never moves.</p></div>
       <div class="fact"><h3>Any bank in Europe</h3><p>2,700+ banks through Enable Banking, one consent flow, no contract for your own accounts.</p></div>
       <div class="fact"><h3>Easy to walk away from</h3><p>Change the password or revoke at your bank, and that's that. No account to close.</p></div>
     </div>
@@ -303,7 +303,7 @@
         if (el.classList.contains("me")) { await type(el); await wait(500); continue; }
         if (el.classList.contains("tool")) { await wait(300); reveal(el); await wait(900); continue; }
         if (el.classList.contains("art-wrap")) {
-          // Final frame: align Claude's label at the top so the reply and the whole budget fit the window.
+          // Final frame: align the assistant's label at the top so the reply and the whole budget fit the window.
           const label = items[items.indexOf(el) - 2];
           el.classList.add("on"); chat.scrollTop = label.offsetTop - 24;
           await wait(400); el.classList.add("grow"); continue;

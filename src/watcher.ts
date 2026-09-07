@@ -35,7 +35,7 @@ export async function runWatches(opts: { force?: boolean } = {}): Promise<WatchR
   for (const session of s.sessions()) {
     const left = daysLeft(session.valid_until);
     if (left <= 7 && !session.expiry_notified) {
-      const text = `Bank consent for ${session.bank.name} expires in ${left} day${left === 1 ? "" : "s"}. Ask Claude to connect the bank again to renew it.`;
+      const text = `Bank consent for ${session.bank.name} expires in ${left} day${left === 1 ? "" : "s"}. Ask your assistant to connect the bank again to renew it.`;
       run.events.push({ watch_id: "consent", account: session.bank.name, type: "consent_expiring", text });
       s.update((d) => void (d.sessions[session.id]!.expiry_notified = true));
     }
