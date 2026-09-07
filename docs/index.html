@@ -57,13 +57,18 @@
   .tool code { font-size: 0.66rem; color: var(--dim); }
   .tool .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 0.45rem; vertical-align: middle; }
 
-  /* Animated dialogue */
-  .chat > * { opacity: 0; transform: translateY(6px); animation: pop .45s ease-out forwards; animation-delay: var(--d, 0s); }
+  /* Animated dialogue: plays, holds on the budget, fades, repeats (see script) */
+  .chat { opacity: 0; }
+  .chat > * { opacity: 0; transform: translateY(6px); }
+  .chat.play > * { animation: pop .45s ease-out forwards; animation-delay: var(--d, 0s); }
   @keyframes pop { to { opacity: 1; transform: none; } }
+  .chat.play { animation: cycle 13s linear forwards; }
+  @keyframes cycle { 0% { opacity: 0; } 3%, 91% { opacity: 1; } 97%, 100% { opacity: 0; } }
   .art-wrap .artifact { margin-top: 0; }
-  .env .fill { transform-origin: left; transform: scaleX(0); animation: grow .9s cubic-bezier(.2,.7,.2,1) forwards; animation-delay: 6.2s; }
+  .env .fill { transform-origin: left; transform: scaleX(0); }
+  .chat.play .env .fill { animation: grow .9s cubic-bezier(.2,.7,.2,1) forwards; animation-delay: 6.2s; }
   @keyframes grow { to { transform: scaleX(1); } }
-  @media (prefers-reduced-motion: reduce) { .chat > *, .env .fill { animation: none; opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .chat > *, .chat.play > *, .env .fill, .chat.play .env .fill, .chat, .chat.play { animation: none !important; opacity: 1; transform: none; } }
 
   section { padding: 4.5rem 0; border-top: 1px solid var(--border); }
   @media (min-width: 768px) { section { padding: 5.5rem 0; } }
@@ -264,5 +269,14 @@
     </nav>
   </div>
 </footer>
+<script>
+  (() => {
+    const chat = document.getElementById("demo");
+    if (!chat || matchMedia("(prefers-reduced-motion: reduce)").matches) { chat && chat.classList.add("play"); return; }
+    const play = () => { chat.classList.remove("play"); void chat.offsetWidth; requestAnimationFrame(() => chat.classList.add("play")); };
+    play();
+    setInterval(play, 13000);
+  })();
+</script>
 </body>
 </html>
