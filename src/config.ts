@@ -72,7 +72,8 @@ export const config = {
   notifyWebhookUrl: env.NOTIFY_WEBHOOK_URL ?? "",
   // Hosts an OAuth client may send the sign-in back to. Stops a phishing link
   // from registering a client that redirects your authorization code elsewhere.
-  allowedRedirectHosts: (env.ALLOWED_REDIRECT_HOSTS ?? "claude.ai,claude.com,localhost,127.0.0.1")
+  // Defaults cover the well-known MCP clients; subdomains are included.
+  allowedRedirectHosts: (env.ALLOWED_REDIRECT_HOSTS ?? "claude.ai,claude.com,chatgpt.com,openai.com,mistral.ai,cursor.com,cursor.sh,vscode.dev,localhost,127.0.0.1")
     .split(",")
     .map((h) => h.trim().toLowerCase())
     .filter(Boolean),

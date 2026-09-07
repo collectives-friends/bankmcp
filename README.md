@@ -101,8 +101,9 @@ claude mcp add --transport http bank https://YOUR-HOST/mcp
 then run `/mcp` inside Claude Code to sign in.
 
 Other MCP clients (ChatGPT, Mistral Le Chat, Cursor, VS Code) work the same
-way: add the URL as a remote MCP server, sign in with the password. If the
-client is hosted, add its domain to `ALLOWED_REDIRECT_HOSTS` first.
+way: add the URL as a remote MCP server, sign in with the password. Tested
+with Claude, Claude Code and Ollama; the others follow the same standard.
+A client whose domain is not in `ALLOWED_REDIRECT_HOSTS` needs adding there.
 
 ### 5. Connect your bank
 
@@ -222,10 +223,10 @@ bank either way; that part is regulated and unavoidable.
 - State is one JSON file in `DATA_DIR`: consents, account ids, watches and
   OAuth tokens. Back it up if you care about not re-consenting; delete it to
   forget everything.
-- Only clients that redirect back to `claude.ai`, `claude.com` or localhost
-  can register (`ALLOWED_REDIRECT_HOSTS`), so a phishing link cannot route
-  your sign-in to another site. Using another MCP client, such as ChatGPT or
-  Cursor? Add its domain to that list; the server itself is standard MCP. The sign-in page also names the host you will
+- Only clients that redirect back to a known MCP client domain (Claude,
+  ChatGPT, Mistral, Cursor, VS Code) or localhost can register
+  (`ALLOWED_REDIRECT_HOSTS`), so a phishing link cannot route your sign-in to
+  another site. Using a client not on the list? Add its domain. The sign-in page also names the host you will
   be sent back to.
 - Anyone with the admin password can read your accounts. Use a long one.
   Every successful sign-in is logged and, if `NOTIFY_WEBHOOK_URL` is set,
