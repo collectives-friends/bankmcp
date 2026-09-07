@@ -302,8 +302,8 @@
         if (el.classList.contains("me")) { await type(el); await wait(500); continue; }
         if (el.classList.contains("tool")) { await wait(300); reveal(el); await wait(900); continue; }
         if (el.classList.contains("art-wrap")) {
-          // Final frame: the assistant's label at the top, and the card grows if the budget needs more room.
-          const label = items[items.indexOf(el) - 2];
+          // Final frame: the prompt that asked for the budget at the top, and the card grows if the budget needs more room.
+          const label = items[items.indexOf(el) - 5];
           el.classList.add("on");
           const need = el.offsetTop + el.offsetHeight + pad - label.offsetTop + pad;
           if (need > chat.clientHeight) chat.style.height = need + "px";
