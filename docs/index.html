@@ -46,7 +46,7 @@
   .proof strong { color: var(--ink); font-weight: 500; letter-spacing: -0.02em; }
 
   /* Conversation */
-  .chat { margin: 3.5rem auto 0; max-width: 620px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
+  .chat { margin: 3.5rem 0 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
   .chat .who { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 0 0 0.35rem; }
   .chat .who.r { text-align: right; }
   .msg { max-width: 82%; padding: 0.7rem 1rem; border-radius: 12px; font-size: 0.92rem; line-height: 1.5; margin-bottom: 0.9rem; }
@@ -83,6 +83,23 @@
   .fact h3::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); flex: none; }
   .fact p { font-size: 0.85rem; color: var(--dim); font-weight: 300; line-height: 1.55; }
 
+  /* Artifact mock */
+  .artifact { margin-top: 2.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
+  .artifact .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.25rem; }
+  .artifact .head h4 { font-size: 0.95rem; font-weight: 500; letter-spacing: -0.01em; }
+  .artifact .head span { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+  .tile { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1rem; }
+  .tile .l { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.3rem; }
+  .tile .v { font-size: 1.25rem; font-weight: 400; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .tile .d { font-size: 0.68rem; color: var(--dim); font-weight: 300; margin-top: 0.15rem; }
+  .bars { display: grid; grid-template-columns: 7.5rem 1fr 4.5rem; gap: 0.55rem 0.9rem; align-items: center; font-size: 0.8rem; }
+  .bars .k { color: var(--dim); font-weight: 300; }
+  .bars .b { height: 8px; border-radius: 0 4px 4px 0; background: var(--ink); }
+  .bars .v { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); font-size: 0.78rem; }
+  .artifact .note { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--muted); font-weight: 300; }
+  @media (max-width: 520px) { .tiles { grid-template-columns: 1fr; } .bars { grid-template-columns: 5.5rem 1fr 3.5rem; } }
+
   .fine { font-size: 0.82rem; color: var(--dim); font-weight: 300; line-height: 1.65; max-width: 680px; }
   .fine p + p { margin-top: 0.85rem; } .fine strong { color: var(--ink); font-weight: 500; }
 
@@ -101,6 +118,7 @@
     <nav>
       <a href="#how">How it works</a>
       <a href="#ask">What you can ask</a>
+      <a href="#artifacts">Artifacts</a>
       <a href="#safe">Security</a>
       <a href="https://github.com/noskillish/bank">GitHub</a>
     </nav>
@@ -156,8 +174,34 @@
       <li>Which subscriptions am I paying for, and what do they cost a year?</li>
       <li>Has the rent gone out?</li>
       <li>Tell me if my balance drops below 5,000.</li>
+      <li>Build me a spending dashboard for August.</li>
       <li>Anything unusual this month?</li>
     </ul>
+  </div>
+</section>
+
+<section id="artifacts">
+  <div class="container">
+    <div class="eyebrow">Artifacts</div>
+    <h2>Ask for a page, <span class="dim">not just an answer.</span></h2>
+    <p class="section-subtitle">Say “build me a spending dashboard for August” and Claude turns the numbers into an artifact: a page you can keep, filter and come back to. The data still comes straight from your server, and it is stored nowhere else.</p>
+    <div class="artifact" aria-label="Example artifact">
+      <div class="head"><h4>August</h4><span>Artifact · built from 214 transactions</span></div>
+      <div class="tiles">
+        <div class="tile"><div class="l">Income</div><div class="v">61,300</div><div class="d">salary + 1 payout</div></div>
+        <div class="tile"><div class="l">Spending</div><div class="v">38,450</div><div class="d">−6% vs July</div></div>
+        <div class="tile"><div class="l">Saved</div><div class="v">37%</div><div class="d">22,850 kept</div></div>
+      </div>
+      <div class="bars">
+        <div class="k">Housing</div><div class="b" style="width:100%"></div><div class="v">14,200</div>
+        <div class="k">Other</div><div class="b" style="width:62%"></div><div class="v">8,850</div>
+        <div class="k">Groceries</div><div class="b" style="width:48%"></div><div class="v">6,850</div>
+        <div class="k">Eating out</div><div class="b" style="width:27%"></div><div class="v">3,900</div>
+        <div class="k">Transport</div><div class="b" style="width:19%"></div><div class="v">2,700</div>
+        <div class="k">Subscriptions</div><div class="b" style="width:14%"></div><div class="v">1,950</div>
+      </div>
+      <div class="note">Illustrative numbers. Your artifact uses your transactions, categorised by the rules in the Bank™ skill, and can be regenerated any month with one sentence.</div>
+    </div>
   </div>
 </section>
 
