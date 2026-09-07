@@ -305,9 +305,12 @@
           // Final frame: the prompt that asked for the budget at the top, and the card grows if the budget needs more room.
           const label = items[items.indexOf(el) - 5];
           el.classList.add("on");
-          const need = el.offsetTop + el.offsetHeight + pad - label.offsetTop + pad;
+          const trackTop = track.getBoundingClientRect().top;
+          const top = label.getBoundingClientRect().top - trackTop;
+          const bottom = el.getBoundingClientRect().bottom - trackTop + 6; // +6: the pre-reveal translateY
+          const need = bottom - top + pad * 2;
           if (need > chat.clientHeight) chat.style.height = need + "px";
-          slideTo(label.offsetTop - pad);
+          slideTo(top - pad);
           await wait(500); el.classList.add("grow"); continue;
         }
         reveal(el); await wait(1100);
