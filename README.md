@@ -24,8 +24,11 @@ Your assistant ──OAuth──▶ your BankMCP™ server ──JWT──▶ En
 - **Your server** holds the Enable Banking application key, the bank consents
   and your account ids. It does not store balances or transactions and sends no
   telemetry.
-- **Enable Banking** is the licensed provider. You log in at your bank's own
-  site to approve access; nobody sees your bank credentials.
+- **Enable Banking** is the licensed provider between your server and your
+  bank. Every balance and transaction you ask for passes through their
+  servers on the way to yours; they do not store it, and they never see your
+  bank credentials, since you log in at your bank's own site. This hop is how
+  PSD2 works and is the one part of the chain that is not on your machine.
 
 ## Setup
 
@@ -37,6 +40,10 @@ minutes.
 - **On a small server** when you want it in claude.ai or on your phone.
 
 ### On your own machine
+
+"Local" means the server and its state live on your computer and no AI
+vendor or app maker sees your data. The bank connection still goes through
+Enable Banking, as described above.
 
 Requires [Node 24](https://nodejs.org) or newer. Add BankMCP™ to your client:
 
