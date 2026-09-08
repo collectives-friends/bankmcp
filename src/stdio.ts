@@ -12,4 +12,8 @@ const { ensureLocalServer } = await import("./local.ts");
 ensureLocalServer().catch((err) => console.error("[bank] could not start the local server:", err.message));
 if (!isConfigured()) console.error("[bank] not configured yet: ask your assistant anything and it will point you to the setup page");
 
-await createServer().connect(new StdioServerTransport());
+const transport = new StdioServerTransport();
+// Exit with the client: when stdin closes, the localhost listener must not keep the process alive.
+transport.onclose = () => process.exit(0);
+process.stdin.on("end", () => process.exit(0));
+await createServer().connect(transport);
