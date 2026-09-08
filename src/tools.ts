@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { config } from "./config.ts";
+import { config, isConfigured } from "./config.ts";
 import { eb, EnableBankingError } from "./enablebanking.ts";
 import { store, type StoredAccount, type WatchRule } from "./store.ts";
 import { daysAgo, daysLeft, describeAccount, isoDate, simplifyBalances, simplifyTransaction } from "./data.ts";
@@ -48,6 +48,12 @@ async function withAccount<T>(ref: string, fn: (a: StoredAccount) => Promise<T>)
 function guard<A extends unknown[]>(fn: (...args: A) => Promise<ReturnType<typeof json> | ReturnType<typeof fail>>) {
   return async (...args: A) => {
     try {
+      if (!isConfigured()) {
+        return fail(
+          `${config.appName} is not set up yet. Open ${config.baseUrl} in a browser: register an application at Enable Banking with the values shown there, then enter the application id and choose the key file.` +
+            (config.localMode ? " The browser will warn about a self-signed certificate on localhost; continue past it." : ""),
+        );
+      }
       return await fn(...args);
     } catch (err) {
       if (err instanceof ToolError) return fail(err.message);

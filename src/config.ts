@@ -3,10 +3,14 @@
 // setup page stores the application id, the key file and the password hash.
 import { accessSync, constants, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { homedir } from "node:os";
 
 const env = process.env;
+// Local mode: the server is launched by an MCP client on the user's own
+// machine over stdio. No OAuth, no admin password; state lives in ~/.bankmcp.
+const localMode = env.BANKMCP_LOCAL === "1";
 const port = Number(env.PORT ?? 8080);
-const dataDir = env.DATA_DIR ?? "./data";
+const dataDir = env.DATA_DIR ?? (localMode ? join(homedir(), ".bankmcp") : "./data");
 
 export interface Settings {
   app_id?: string;
@@ -43,10 +47,12 @@ function detectBaseUrl(): string {
   if (env.BASE_URL) return env.BASE_URL.replace(/\/+$/, "");
   if (env.RAILWAY_PUBLIC_DOMAIN) return `https://${env.RAILWAY_PUBLIC_DOMAIN}`;
   if (env.FLY_APP_NAME) return `https://${env.FLY_APP_NAME}.fly.dev`;
+  if (localMode) return `https://localhost:${port}`;
   return `http://localhost:${port}`;
 }
 
 export const config = {
+  localMode,
   get appId(): string {
     return env.EB_APP_ID ?? settings.app_id ?? "";
   },
@@ -86,7 +92,7 @@ export const config = {
   pollIntervalHours: Number(env.POLL_INTERVAL_HOURS ?? 6),
   /** True when every secret came from the environment, so the setup page has nothing to do. */
   get lockedByEnv(): boolean {
-    return Boolean(env.EB_APP_ID && (env.EB_PRIVATE_KEY || env.EB_PRIVATE_KEY_PATH) && (env.ADMIN_PASSWORD_HASH || env.ADMIN_PASSWORD));
+    return Boolean(env.EB_APP_ID && (env.EB_PRIVATE_KEY || env.EB_PRIVATE_KEY_PATH) && (localMode || env.ADMIN_PASSWORD_HASH || env.ADMIN_PASSWORD));
   },
 };
 
@@ -111,7 +117,7 @@ export function setupProblems(): string[] {
       problems.push(`Cannot read private key: ${(err as Error).message}`);
     }
   }
-  if (!config.adminPasswordHash && !config.adminPassword) problems.push("Admin password is not set");
+  if (!localMode && !config.adminPasswordHash && !config.adminPassword) problems.push("Admin password is not set");
   if (!/^https?:\/\//.test(config.baseUrl)) problems.push("BASE_URL must start with http:// or https://");
   try {
     mkdirSync(config.dataDir, { recursive: true });

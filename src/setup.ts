@@ -15,7 +15,8 @@ export interface SetupInput {
 }
 
 export function setupAvailable(): boolean {
-  return !config.lockedByEnv && !(config.appId && (config.privateKey || config.privateKeyPath) && (config.adminPasswordHash || config.adminPassword));
+  const hasPassword = config.localMode || Boolean(config.adminPasswordHash || config.adminPassword);
+  return !config.lockedByEnv && !(config.appId && (config.privateKey || config.privateKeyPath) && hasPassword);
 }
 
 /** Returns null on success, otherwise a message for the form. */
@@ -32,12 +33,14 @@ export function applySetup(input: SetupInput): string | null {
   } catch {
     return "The key file could not be read as a private key.";
   }
-  if (password.length < 12) return "Use a password of at least 12 characters. It is the only thing between the internet and your accounts.";
-  if (password !== input.password2) return "The two passwords do not match.";
+  if (!config.localMode) {
+    if (password.length < 12) return "Use a password of at least 12 characters. It is the only thing between the internet and your accounts.";
+    if (password !== input.password2) return "The two passwords do not match.";
+  }
   if (country && !/^[A-Z]{2}$/.test(country)) return "Country should be a two-letter code such as DK.";
 
   saveKeyFile(pem);
-  saveSettings({ app_id: appId, admin_password_hash: hashPassword(password), country: country || undefined, setup_completed: new Date().toISOString() });
+  saveSettings({ app_id: appId, admin_password_hash: config.localMode ? undefined : hashPassword(password), country: country || undefined, setup_completed: new Date().toISOString() });
   resetKeyCache();
   return null;
 }

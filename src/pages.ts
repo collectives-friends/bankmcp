@@ -104,6 +104,15 @@ export function statusPage(input: { problems: string[]; mcpUrl: string; callback
   }
   // Deliberately says nothing about which banks or accounts are connected:
   // this page is reachable without a password. Ask consent_status through the connector.
+  if (config.localMode) {
+    return shell(
+      config.appName,
+      `<p>Running on this machine. Your MCP client is connected to it over stdio.</p>
+       <p class="muted" style="margin-bottom:4px">Redirect URL for the application at Enable Banking</p><p><code>${esc(input.callbackUrl)}</code></p>
+       <p class="muted">To link a bank, ask your assistant to connect it. The browser opens for the bank login and returns here.</p>`,
+      { kind: "ok", pill: "Running locally" },
+    );
+  }
   return shell(
     config.appName,
     `<p>Running. Two addresses to copy:</p>
@@ -137,10 +146,10 @@ export function setupPage(opts: { error?: string; values?: { app_id?: string; co
        <textarea id="pem" name="pem" rows="3" placeholder="…or paste the contents of the .pem file here" spellcheck="false"></textarea>
        <label for="country">Country of your banks</label>
        <input id="country" name="country" maxlength="2" placeholder="DK" value="${esc(v.country ?? "")}" style="width:6em;text-transform:uppercase">
-       <label for="password">Password (12+ characters, used when connecting your assistant)</label>
+       ${config.localMode ? "" : `<label for="password">Password (12+ characters, used when connecting your assistant)</label>
        <input id="password" type="password" name="password" required minlength="12" autocomplete="new-password">
        <label for="password2">Repeat password</label>
-       <input id="password2" type="password" name="password2" required minlength="12" autocomplete="new-password">
+       <input id="password2" type="password" name="password2" required minlength="12" autocomplete="new-password">`}
        <button type="submit">Finish setup</button>
      </form>
      <script>

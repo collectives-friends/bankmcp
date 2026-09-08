@@ -1,6 +1,6 @@
 # BankMCP™
 
-**Your AI can now read your bank.** Ask it anything about your accounts. Read-only, self-hosted, one user. Standard MCP; tested with Claude and Ollama.
+**Your AI now reads your bank.** Ask it anything about your accounts. Read-only, self-hosted, one user. Standard MCP; tested with Claude and Ollama.
 
 BankMCP™ is not a bank. It is a small open-source server you host yourself
 (package name `bank-mcp`). It connects to your banks
@@ -29,10 +29,43 @@ Your assistant ──OAuth──▶ your BankMCP™ server ──JWT──▶ En
 
 ## Setup
 
-You need an Enable Banking account (free), a place to run a container with a
-public https address, and about fifteen minutes.
+Two ways to run it. Both need a free Enable Banking account and about ten
+minutes.
 
-### 1. Deploy
+- **On your own machine** for Claude Desktop, Claude Code, Cursor and other
+  desktop MCP clients. Nothing to deploy, no password.
+- **On a small server** when you want it in claude.ai or on your phone.
+
+### On your own machine
+
+Requires [Node 24](https://nodejs.org) or newer. Add BankMCP™ to your client:
+
+Claude Code:
+
+```bash
+claude mcp add bankmcp -- npx -y bankmcp
+```
+
+Claude Desktop, in `claude_desktop_config.json`:
+
+```json
+{ "mcpServers": { "bankmcp": { "command": "npx", "args": ["-y", "bankmcp"] } } }
+```
+
+Cursor and others: the same command, `npx -y bankmcp`, as a stdio server.
+
+Then ask your assistant anything about your bank. It will answer with a
+localhost address. Open it: the setup page lists the values to register an
+application at Enable Banking, then takes the application id and the key file.
+Your browser will warn once about the certificate on localhost, which the
+server made for itself because Enable Banking requires https for the bank
+redirect. Continue past it. Say "connect my bank" and log in at your bank.
+
+State lives in `~/.bankmcp`. Delete the folder to forget everything.
+
+### On a server
+
+#### 1. Deploy
 
 Any container host works. The server needs a persistent volume at `/data`
 and a public https address; it asks you for everything else in the browser.
@@ -50,7 +83,7 @@ gives the address.
 
 Open the address. A fresh server shows a setup page.
 
-### 2. Register an Enable Banking application
+#### 2. Register an Enable Banking application
 
 The setup page lists the exact values Enable Banking's form asks for: the
 redirect URL, a description for the consent screen, and the privacy and
@@ -62,7 +95,7 @@ terms URLs, all pointing at your server. At
 - Keep "generate private key" selected. A `.pem` file downloads once when you
   save; that is the key. The application id (a UUID) is shown after saving.
 
-### 3. Finish setup
+#### 3. Finish setup
 
 Back on the setup page: paste the application id, choose the `.pem` file, pick
 a password of twelve characters or more. Everything is stored on the volume,
@@ -85,7 +118,7 @@ Optional: `NOTIFY_WEBHOOK_URL` for watch notifications and sign-in alerts (a
 Slack incoming webhook works). Full list in [.env.example](.env.example).
 `npm run check` verifies a configuration from a terminal.
 
-### 4. Add the connector in your assistant
+#### 4. Add the connector in your assistant
 
 In claude.ai (or the desktop app): **Settings → Connectors → Add custom
 connector**. Name it `BankMCP™`, paste `https://YOUR-HOST/mcp`, save, then click
@@ -105,7 +138,7 @@ way: add the URL as a remote MCP server, sign in with the password. Tested
 with Claude, Claude Code and Ollama; the others follow the same standard.
 A client whose domain is not in `ALLOWED_REDIRECT_HOSTS` needs adding there.
 
-### 5. Connect your bank
+#### 5. Connect your bank
 
 In your assistant, say **"connect my bank"** (or use the `connect-bank` prompt). It
 looks up your bank, gives you a link, you log in at the bank and approve, and
@@ -180,22 +213,6 @@ The skill lives at [plugin/skills/bank/SKILL.md](plugin/skills/bank/SKILL.md).
 Copy it into your own skills to fill in the account map and your merchant
 rules. The server stays generic; your rules stay yours.
 
-## Running it on your own machine
-
-The server can also run locally over stdio, with no OAuth, for Claude Code in
-this directory. The repository ships a `.mcp.json` for that:
-
-```bash
-npm install
-cp .env.example .env    # EB_APP_ID, EB_PRIVATE_KEY_PATH, ADMIN_PASSWORD
-npm run dev             # http server, for the bank redirect
-```
-
-Production applications require an https redirect URL even locally. Create a
-certificate with [mkcert](https://github.com/FiloSottile/mkcert), set
-`TLS_CERT_PATH`, `TLS_KEY_PATH` and `BASE_URL=https://localhost:8080`, and
-register `https://localhost:8080/callback` as a redirect URL.
-
 ## Local models (experimental)
 
 The server does not care which model asks. `npm run chat` bridges an
@@ -266,7 +283,9 @@ src/watcher.ts        background rule checks and notifications
 src/enablebanking.ts  JWT signing and a thin typed API client
 src/store.ts          the JSON state file
 src/data.ts           shaping balances and transactions for an assistant
-src/stdio.ts          local stdio entry point
+src/stdio.ts          local entry point (stdio, used by `npx bankmcp`)
+src/local.ts          localhost https server for setup and the bank redirect in local mode
+src/app.ts            the Express app shared by both modes
 src/cli.ts            check, hash-password, watch
 plugin/               Claude Code plugin with the bank skill
 ```

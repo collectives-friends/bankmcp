@@ -1,5 +1,5 @@
 {
-  "name": "bank-mcp",
+  "name": "bankmcp",
   "version": "0.1.0",
   "description": "BankMCP™: self-hosted, read-only MCP server that lets any AI assistant (Claude, ChatGPT, Mistral, Cursor, or a local model) answer questions about your own bank accounts via open banking (Enable Banking, PSD2)",
   "license": "MIT",
@@ -16,16 +16,28 @@
     "watch": "node --env-file-if-exists=.env src/cli.ts watch",
     "test": "node --test test/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "chat": "node --env-file-if-exists=.env scripts/local-chat.ts"
+    "chat": "node --env-file-if-exists=.env scripts/local-chat.ts",
+    "local": "node bin/bankmcp.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
     "express": "^5.2.1",
+    "selfsigned": "^5.5.0",
     "zod": "^4.5.4"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^24.0.0",
     "typescript": "^5.8.0"
-  }
+  },
+  "bin": {
+    "bankmcp": "bin/bankmcp.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "plugin",
+    "README.md",
+    "LICENSE"
+  ]
 }
