@@ -25,12 +25,16 @@ export function createApp(opts: AppOptions) {
   const app = express();
   app.set("trust proxy", 1);
   app.disable("x-powered-by");
+  // form-action also constrains the 302 Location after POST /login (OAuth redirect_uri).
+  // Without localhost here, Grok/Cursor Connect is blocked by CSP when redirecting to :8787.
+  const pageCsp =
+    "default-src 'none'; style-src 'unsafe-inline'; form-action 'self' http://localhost:8787 http://127.0.0.1:8787 https://www.cursor.com https://cursor.com cursor:; frame-ancestors 'none'; base-uri 'none'";
   app.use((_req, res, next) => {
     res.set({
       "X-Frame-Options": "DENY",
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "no-referrer",
-      "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
+      "Content-Security-Policy": pageCsp,
     });
     next();
   });
@@ -83,7 +87,7 @@ export function createApp(opts: AppOptions) {
 
   const callbackUrl = new URL("/callback", baseUrl).href;
   // The setup page reads the chosen key file in the browser, which needs one inline script.
-  const setupCsp = "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
+  const setupCsp = "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'self' http://localhost:8787 http://127.0.0.1:8787; frame-ancestors 'none'; base-uri 'none'";
 
   app.get("/", (_req, res) => {
     if (setupAvailable()) return void res.set("Content-Security-Policy", setupCsp).type("html").send(setupPage({ baseUrl: config.baseUrl }));
