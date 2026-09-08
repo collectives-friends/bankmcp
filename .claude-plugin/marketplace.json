@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "BankMCP™: ask your AI assistant about your own bank accounts. Read-only, self-hosted, on PSD2 open banking via Enable Banking. Works with any MCP client.",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "plugins": [
     {
       "name": "bank",
       "source": "./plugin",
-      "description": "BankMCP™ for Claude Code: connects to your own open-banking server (bank-mcp, Enable Banking) and adds a skill with account mapping, categorisation rules and a monthly review format.",
-      "version": "0.1.0",
+      "description": "BankMCP™ for Claude Code: /bank:setup walks you through installing it locally, /bank:deploy through hosting it; plus a skill with account mapping, categorisation rules and a monthly review format.",
+      "version": "0.1.1",
       "author": {
         "name": "Nils Smed"
       },

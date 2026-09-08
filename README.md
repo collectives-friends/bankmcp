@@ -194,9 +194,10 @@ is polled. There is no way around that under PSD2.
 ## Claude Code plugin
 
 The repository is also a Claude Code plugin marketplace. The `bank` plugin
-bundles the connector entry and a skill that encodes how to work with the
-data: an account map, categorisation rules, the monthly review format and when
-to create watches.
+brings three skills: `/bank:setup` walks you through installing BankMCP™ on
+your machine, `/bank:deploy` through hosting it, and `bank` encodes how to work
+with the data: an account map, categorisation rules, the monthly review format
+and when to create watches.
 
 Point it at your server, then install:
 
