@@ -1,7 +1,7 @@
 {
   "name": "bank",
   "version": "0.1.1",
-  "description": "BankMCP™: work with your own bank accounts through an bank-mcp (Enable Banking, open banking) connector: account mapping, categorisation rules and the monthly review format.",
+  "description": "BankMCP™: work with your own bank accounts through a bankmcp server (Enable Banking, open banking) connector: account mapping, categorisation rules and the monthly review format.",
   "author": {
     "name": "Nils Smed"
   },

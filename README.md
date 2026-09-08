@@ -3,7 +3,7 @@
 **Your AI now reads your bank.** Ask it anything about your accounts. Read-only, self-hosted, one user. Standard MCP; tested with Claude and Ollama.
 
 BankMCP™ is not a bank. It is a small open-source server you host yourself
-(package name `bank-mcp`). It connects to your banks
+(npm package `bankmcp`). It connects to your banks
 through [Enable Banking](https://enablebanking.com), which wraps 2,700+
 European banks in one PSD2 API, and exposes them to any MCP client as a
 connector. Read-only, no payments, no third party holding your data.
