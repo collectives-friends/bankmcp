@@ -26,7 +26,7 @@ Your assistant ──OAuth──▶ your BankMCP™ server ──JWT──▶ En
   telemetry.
 - **Enable Banking** is the licensed provider between your server and your
   bank. Every balance and transaction you ask for passes through their
-  servers on the way to yours; they do not store it, and they never see your
+  servers on the way to yours; they do not store it, and they do not see your
   bank credentials, since you log in at your bank's own site. This hop is how
   PSD2 works and is the one part of the chain that is not on your machine.
 
