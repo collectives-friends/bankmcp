@@ -5,4 +5,4 @@ if (major < 24) {
   console.error(`BankMCP needs Node 24 or newer (you have ${process.versions.node}).`);
   process.exit(1);
 }
-await import("../src/stdio.ts");
+await import("../dist/lib/stdio.js");
