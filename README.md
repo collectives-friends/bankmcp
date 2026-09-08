@@ -41,9 +41,9 @@ minutes.
 
 ### On your own machine
 
-"Local" means the server and its state live on your computer and no AI
-vendor or app maker sees your data. The bank connection still goes through
-Enable Banking, as described above.
+The server and its state live on your computer, and no AI vendor or app
+maker sees your data. The bank connection is not on your computer: it goes
+through Enable Banking, as described above.
 
 Requires [Node 24](https://nodejs.org) or newer. Add BankMCP™ to your client:
 
