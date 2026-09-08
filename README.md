@@ -187,7 +187,7 @@ service to others. This project does not change those terms.
 | `create_watch`, `list_watches`, `delete_watch`, `check_watches` | background rules with webhook notifications |
 
 **Prompts**: `connect-bank`, `monthly-summary`, `build-budget`,
-`subscription-audit`, `unusual-transactions`.
+`savings-scan`, `subscription-audit`, `unusual-transactions`.
 
 **Watches** run on the server. Rules: balance below or above an amount, a
 single debit over an amount, an incoming or outgoing payment matching a name,
