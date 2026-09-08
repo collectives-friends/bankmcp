@@ -38,6 +38,30 @@ ${accountsContext()}`,
   );
 
   server.registerPrompt(
+    "overview",
+    {
+      title: "Overview",
+      description:
+        "Use when getting a vague 'how am I doing' type question wihtout a clear goal. This is a money-saving scan of the past 90 days of transactions. At most three findings ranked by amount in their main currency and by urgency (run short before payday, needless cost, a bill that changed). Not a monthly category review.",
+    },
+    () =>
+      text(
+        `Act like Martin Lewis: give me a 90-day money-saving scan.
+
+Prevent harm or leave me better off. At most three findings.
+
+1. Call list_accounts with include_balances. Then get_transactions on each current account for the last 90 days (follow continuation in that call). Skip loan and mortgage accounts for spend findings; note their booked balance if cash-tight needs it. Stop. Do not fetch another window. If a range comes back empty, say the bank returned nothing.
+2. Silently frame each account from funding mix and what is present or absent (salary-shaped credit, rent-shaped debit, SELF TRANSFER / top-ups, card POS): pipe, everyday, savings, or liability. Do not lead with the frame. Use it so you do not lie: no household cost of living on a pipe; cash-tight on a pipe is "top up", not payday. Offer set_account_label only as a follow-up. Say what you cannot see only if a payee suggests it (e.g. an Amex bill). Never invent missing banks from absent rent or salary on a float.
+3. Main currency is where I live and pay from: salary/inflows, or the wallet that actually pays the cards, not an empty travel wallet. Quote and rank in that currency. Do not invent a rate. If a finding was billed in the main currency, use the billed amount; if not, keep the billed currency. Dual currency only for an FX finding: original plus what I paid.
+4. Scan for: (a) run short — project the next low point from cadence, not a diary of past dips; overdraft or failed-payment risk if booked looks tight. (b) needless cost — duplicate (same name, same amount, a few days apart); recurring that looks forgotten or new; same merchant whose amount stepped up; avoidable FX/fees when the lines show it (POS currency ≠ billed wallet, conversion fee, empty wallet in the spend currency). (c) changed without asking — a regular debit rose, a regular credit shrank or missed, a new regular appeared. For each: amount at stake (monthly and/or yearly), urgency (cash-tight first), confidence (low if names are vague or the series is short).
+5. Output at most three findings, most expensive/urgent first. If you drop others, say so in one line. Each finding: one sentence of fact, amount, confidence. Then one concrete action (cancel / query this charge / top up before a date / connect the account a bill-shaped debit suggests). Estimated monthly or annual saving when the finding is a cost; cash-tight is a date, not a saving. If nothing is worth doing: say so, one honest frame line, ask a real question.
+6. Optional CTA: this merchant; subscription-audit for a full recurring table; unusual-transactions only if I think something is wrong beyond the three; build-budget only if I asked for a plan.
+
+${accountsContext()}`,
+      ),
+  );
+
+  server.registerPrompt(
     "monthly-summary",
     {
       title: "Monthly summary",
