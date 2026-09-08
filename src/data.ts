@@ -39,6 +39,8 @@ export function simplifyTransaction(t: Transaction): SimpleTransaction {
 export interface SimpleBalances {
   /** Booked (cleared) balance: CLBD, or ITBD when the bank gives no CLBD. This is the number to use for net worth. */
   booked?: number;
+  /** Which balance type `booked` came from (CLBD, ITBD, CLAV, ITAV, XPCD, …). */
+  booked_type?: string;
   /** Available to spend, when the bank reports it (XPCD/OTHR "available"). Credit accounts often report the available credit here. */
   available?: number;
   currency?: string;
@@ -48,10 +50,15 @@ export interface SimpleBalances {
 
 export function simplifyBalances(balances: Balance[]): SimpleBalances {
   const byType = (types: string[]) => balances.find((b) => types.includes(b.balance_type));
-  const booked = byType(["CLBD"]) ?? byType(["ITBD"]) ?? byType(["CLAV"]);
+  // Preference order: closing booked, interim booked, closing available, interim
+  // available, expected, then whatever the bank sent. Some banks (Revolut, for
+  // one) report a single ITAV balance and nothing else; an account must never
+  // vanish from a total because of the label its bank chose.
+  const booked = byType(["CLBD"]) ?? byType(["ITBD"]) ?? byType(["CLAV"]) ?? byType(["ITAV"]) ?? byType(["XPCD"]) ?? balances[0];
   const available = byType(["XPCD"]) ?? balances.find((b) => /avail/i.test(b.name ?? "") || /avail/i.test(b.balance_type));
   return {
     booked: booked ? round2(Number(booked.balance_amount.amount)) : undefined,
+    booked_type: booked?.balance_type,
     available: available && available !== booked ? round2(Number(available.balance_amount.amount)) : undefined,
     currency: (booked ?? balances[0])?.balance_amount.currency,
     reference_date: (booked ?? balances[0])?.reference_date,

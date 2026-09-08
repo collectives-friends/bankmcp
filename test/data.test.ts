@@ -46,3 +46,10 @@ test("booked prefers CLBD, then ITBD; available is XPCD", () => {
   assert.equal(c.booked, 2);
   assert.equal(c.available, undefined);
 });
+
+test("a bank that reports only ITAV still yields a booked balance (#1)", () => {
+  const b = simplifyBalances([{ balance_type: "ITAV", name: "Available balance calculated in the course of the business day", balance_amount: { amount: "1234.50", currency: "EUR" } }]);
+  assert.equal(b.booked, 1234.5);
+  assert.equal(b.booked_type, "ITAV");
+  assert.equal(b.available, undefined, "the single balance is not reported twice");
+});
