@@ -46,7 +46,10 @@ Claude Code:
 claude mcp add bankmcp -- npx -y bankmcp
 ```
 
-Claude Desktop, in `claude_desktop_config.json`:
+Claude Desktop: download
+[bankmcp.mcpb](https://github.com/noskillish/bankmcp/releases/latest/download/bankmcp.mcpb)
+and open it; Claude Desktop installs it as an extension. Or add it by hand in
+`claude_desktop_config.json`:
 
 ```json
 { "mcpServers": { "bankmcp": { "command": "npx", "args": ["-y", "bankmcp"] } } }
@@ -267,6 +270,7 @@ npm run hash-password  # produce ADMIN_PASSWORD_HASH
 npm run watch -- --force   # run all watches once, print what fired
 npm test               # unit tests (node:test)
 npm run typecheck
+sh scripts/build-mcpb.sh   # Claude Desktop bundle → dist/bankmcp.mcpb
 ```
 
 Requires Node 24 or newer (runs TypeScript directly, no build step).
