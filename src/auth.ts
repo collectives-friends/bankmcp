@@ -3,9 +3,11 @@
 // and the token endpoint; this file supplies the storage behind them and a
 // password login page. Tokens are stored hashed.
 //
-// Pending logins and authorization codes are HMAC-signed blobs so authorize,
-// /login and token exchange work across multiple instances (e.g. Manufact)
-// without shared memory or a sticky session.
+// Pending logins, authorization codes, and registered OAuth clients are
+// HMAC-signed blobs so authorize, /login, token exchange, and cached
+// client_id lookups work across multiple instances (e.g. Manufact) without
+// shared memory or durable /data — signed client attestation survives
+// ephemeral host redeploys that wipe oauth.clients.
 import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import type { Response } from "express";
 import type { OAuthServerProvider, AuthorizationParams } from "@modelcontextprotocol/sdk/server/auth/provider.js";
@@ -22,6 +24,7 @@ const ACCESS_TTL = 60 * 60; // 1 hour
 const REFRESH_TTL = 90 * 24 * 60 * 60; // 90 days
 const CODE_TTL = 10 * 60;
 const LOGIN_TTL = 30 * 60;
+const CLIENT_TTL = 10 * 365 * 24 * 60 * 60; // 10y — public clients only
 
 // --- Password ---
 
@@ -116,6 +119,35 @@ interface CodeBlob {
   expires: number;
 }
 
+interface ClientBlob {
+  typ: "client";
+  redirect_uris: string[];
+  client_name?: string;
+  token_endpoint_auth_method?: string;
+  grant_types?: string[];
+  response_types?: string[];
+  scope?: string;
+  /** long-lived; e.g. 10y — public clients only */
+  expires: number;
+}
+
+function clientFromAttestation(clientId: string): OAuthClientInformationFull | undefined {
+  const b = verifyBlob<ClientBlob>(clientId);
+  if (!b || b.typ !== "client" || !Array.isArray(b.redirect_uris) || !b.redirect_uris.length) return undefined;
+  for (const uri of b.redirect_uris) {
+    if (!redirectAllowed(uri)) return undefined;
+  }
+  return {
+    client_id: clientId,
+    redirect_uris: b.redirect_uris,
+    client_name: b.client_name,
+    token_endpoint_auth_method: b.token_endpoint_auth_method ?? "none",
+    grant_types: b.grant_types ?? ["authorization_code", "refresh_token"],
+    response_types: b.response_types ?? ["code"],
+    scope: b.scope,
+  } as OAuthClientInformationFull;
+}
+
 export interface LoginEvent {
   ok: boolean;
   ip: string;
@@ -145,23 +177,56 @@ export class SingleUserProvider implements OAuthServerProvider {
     const store = this.store;
     return {
       getClient(clientId) {
-        return store.data.oauth.clients[clientId] as OAuthClientInformationFull | undefined;
+        const local = store.data.oauth.clients[clientId] as OAuthClientInformationFull | undefined;
+        if (local) return local;
+        const attested = clientFromAttestation(clientId);
+        if (!attested) return undefined;
+        // best-effort rehydrate (ignore write failures on read-only/ephemeral FS)
+        try {
+          store.update((d) => { d.oauth.clients[clientId] = attested as OAuthClient; });
+        } catch { /* ignore */ }
+        return attested;
       },
       registerClient(client) {
         for (const uri of client.redirect_uris) {
-          if (!redirectAllowed(uri)) throw new InvalidClientMetadataError(`redirect_uri host not allowed: ${new URL(uri).hostname}. Set ALLOWED_REDIRECT_HOSTS on the server to permit it.`);
+          if (!redirectAllowed(uri)) {
+            throw new InvalidClientMetadataError(
+              `redirect_uri host not allowed: ${new URL(uri).hostname}. Set ALLOWED_REDIRECT_HOSTS on the server to permit it.`
+            );
+          }
         }
-        const incoming = client as Partial<OAuthClient>;
+        // Reject confidential DCR unless you also store secrets out-of-band
+        const method = client.token_endpoint_auth_method ?? "none";
+        if (method !== "none") {
+          throw new InvalidClientMetadataError("Only token_endpoint_auth_method=none is supported for attested clients");
+        }
+
+        const blob: ClientBlob = {
+          typ: "client",
+          redirect_uris: client.redirect_uris,
+          client_name: client.client_name,
+          token_endpoint_auth_method: "none",
+          grant_types: client.grant_types,
+          response_types: client.response_types,
+          scope: client.scope,
+          expires: now() + CLIENT_TTL,
+        };
+        const client_id = signBlob(blob); // <-- THIS is what Cursor caches
         const full: OAuthClient = {
           ...(client as OAuthClient),
-          client_id: incoming.client_id ?? randomBytes(16).toString("hex"),
-          client_id_issued_at: incoming.client_id_issued_at ?? now(),
+          client_id,
+          client_id_issued_at: now(),
+          token_endpoint_auth_method: "none",
         };
-        store.update((d) => {
-          const ids = Object.keys(d.oauth.clients);
-          if (ids.length > 20) for (const id of ids.slice(0, ids.length - 20)) delete d.oauth.clients[id];
-          d.oauth.clients[full.client_id] = full;
-        });
+        try {
+          store.update((d) => {
+            const ids = Object.keys(d.oauth.clients);
+            if (ids.length > 20) for (const id of ids.slice(0, ids.length - 20)) delete d.oauth.clients[id];
+            d.oauth.clients[full.client_id] = full;
+          });
+        } catch {
+          // registration must succeed even if /data is gone after process start
+        }
         return full as OAuthClientInformationFull;
       },
     };
@@ -196,7 +261,7 @@ export class SingleUserProvider implements OAuthServerProvider {
       return { error: "This sign-in page has expired or the server restarted. Go back to your assistant, click Connect again, and enter the password within 30 minutes." };
     }
 
-    const client = this.store.data.oauth.clients[pending.client_id] as OAuthClientInformationFull | undefined;
+    const client = this.clientsStore.getClient(pending.client_id);
     if (!client) {
       return { error: "This sign-in page has expired or the server restarted. Go back to your assistant, click Connect again, and enter the password within 30 minutes." };
     }
