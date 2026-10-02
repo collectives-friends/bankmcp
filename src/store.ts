@@ -80,6 +80,8 @@ export interface AuthCode {
   resource?: string;
   scopes: string[];
   expires: number;
+  /** sha256 of the token pair issued from this code; set once redeemed. */
+  issued?: string[];
 }
 
 export interface Token {

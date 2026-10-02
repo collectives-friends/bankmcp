@@ -42,7 +42,7 @@ test("full authorization code flow with PKCE, refresh and revocation", async () 
   assert.ok(requestId, "login page carries the request id");
 
   const wrong = provider.completeLogin(requestId!, "nope", "1.2.3.4");
-  assert.ok("error" in wrong && wrong.requestId === requestId);
+  assert.ok("error" in wrong && typeof wrong.requestId === "string", "wrong password re-offers the (re-signed) request");
 
   const ok = provider.completeLogin(requestId!, "correct horse", "1.2.3.4");
   assert.ok("redirect" in ok);
@@ -51,12 +51,12 @@ test("full authorization code flow with PKCE, refresh and revocation", async () 
   assert.equal(url.searchParams.get("state"), "xyz");
   const code = url.searchParams.get("code")!;
 
-  assert.ok("error" in provider.completeLogin(requestId!, "correct horse", "1.2.3.4"), "request id is single use");
+  // Signed login requests (multi-instance fork) are not single use; the admin password gates every new code.
 
   assert.equal(await provider.challengeForAuthorizationCode(client, code), "challenge");
   const tokens = await provider.exchangeAuthorizationCode(client, code, undefined, client.redirect_uris[0]);
   assert.ok(tokens.access_token && tokens.refresh_token);
-  await assert.rejects(provider.exchangeAuthorizationCode(client, code), /Invalid/);
+  // Replay is covered below: it is invalid_grant and revokes this pair (PORT-003).
 
   const info = await provider.verifyAccessToken(tokens.access_token);
   assert.equal(info.clientId, client.client_id);
@@ -116,4 +116,81 @@ test("well-known MCP client domains are allowed by default", async () => {
   const { redirectAllowed } = await import("../src/auth.ts");
   for (const u of ["https://claude.ai/api/mcp/auth_callback", "https://chatgpt.com/connector_platform_oauth_redirect", "https://chat.mistral.ai/oauth/callback", "https://cursor.com/oauth/callback", "http://localhost:3456/cb"]) assert.equal(redirectAllowed(u), true, u);
   for (const u of ["https://evil.example/cb", "https://chatgpt.com.evil.example/cb", "https://notclaude.ai/cb"]) assert.equal(redirectAllowed(u), false, u);
+});
+
+// PORT-003: an authorization code is single use (RFC 6749 §4.1.2).
+async function signedInCode(provider: InstanceType<typeof SingleUserProvider>, redirectUri: string, codeChallenge = "challenge") {
+  const client = await provider.clientsStore.registerClient!({ redirect_uris: [redirectUri], client_name: "Test", token_endpoint_auth_method: "none" });
+  const { out, res } = fakeRes();
+  await provider.authorize(client, { codeChallenge, redirectUri, scopes: ["bank:read"] }, res);
+  const ok = provider.completeLogin(/name="request" value="([^"]+)"/.exec(out.body)![1]!, "correct horse", "7.7.7.7");
+  assert.ok("redirect" in ok);
+  return { client, code: new URL(ok.redirect).searchParams.get("code")! };
+}
+
+const tokenCount = (store: InstanceType<typeof Store>) => Object.keys(store.data.oauth.tokens).length;
+
+test("a redeemed authorization code is invalid_grant on replay, mints nothing and revokes the first pair", async () => {
+  const store = new Store(join(mkdtempSync(join(tmpdir(), "bank-")), "store.json"));
+  const provider = new SingleUserProvider(store);
+  const { client, code } = await signedInCode(provider, "https://claude.ai/cb");
+  const first = await provider.exchangeAuthorizationCode(client, code, undefined, "https://claude.ai/cb");
+  assert.equal(tokenCount(store), 2);
+  await assert.rejects(provider.exchangeAuthorizationCode(client, code, undefined, "https://claude.ai/cb"), (e: Error) => e.name === "InvalidGrantError" || (e as { errorCode?: string }).errorCode === "invalid_grant");
+  assert.equal(tokenCount(store), 0, "replay mints no new pair and revokes the pair issued from the code");
+  await assert.rejects(provider.verifyAccessToken(first.access_token), /Invalid/);
+  await assert.rejects(provider.exchangeRefreshToken(client, first.refresh_token!), /Invalid/);
+  const persisted = new Store(store.path);
+  assert.equal(Object.keys(persisted.data.oauth.tokens).length, 0, "revocation is persisted");
+});
+
+test("an expired authorization code is rejected", async (t) => {
+  const store = new Store(join(mkdtempSync(join(tmpdir(), "bank-")), "store.json"));
+  const provider = new SingleUserProvider(store);
+  const { client, code } = await signedInCode(provider, "https://claude.ai/cb");
+  const later = Date.now() + 11 * 60 * 1000;
+  t.mock.method(Date, "now", () => later);
+  await assert.rejects(provider.exchangeAuthorizationCode(client, code, undefined, "https://claude.ai/cb"), /Invalid or expired/);
+  assert.equal(tokenCount(store), 0);
+});
+
+test("token endpoint: client, redirect_uri and PKCE stay bound; parallel redemptions yield at most one pair", async () => {
+  const { createHash } = await import("node:crypto");
+  const express = (await import("express")).default;
+  const { mcpAuthRouter } = await import("@modelcontextprotocol/sdk/server/auth/router.js");
+  const store = new Store(join(mkdtempSync(join(tmpdir(), "bank-")), "store.json"));
+  const provider = new SingleUserProvider(store);
+  const app = express();
+  const server = app.listen(0);
+  await new Promise((r) => server.once("listening", r));
+  const base = `http://localhost:${(server.address() as import("node:net").AddressInfo).port}`;
+  app.use(mcpAuthRouter({ provider, issuerUrl: new URL(base), resourceServerUrl: new URL("/mcp", base), scopesSupported: ["bank:read"] }));
+  try {
+    const verifier = "v".repeat(64);
+    const challenge = createHash("sha256").update(verifier).digest("base64url");
+    const redirect = "http://localhost:8765/callback";
+    const { client, code } = await signedInCode(provider, redirect, challenge);
+    const other = await provider.clientsStore.registerClient!({ redirect_uris: [redirect], token_endpoint_auth_method: "none" });
+    const redeem = (over: Record<string, string> = {}) =>
+      fetch(`${base}/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ grant_type: "authorization_code", client_id: client.client_id, code, redirect_uri: redirect, code_verifier: verifier, ...over }),
+      }).then(async (r) => ({ status: r.status, body: (await r.json()) as Record<string, string> }));
+
+    for (const bad of [{ client_id: other.client_id }, { redirect_uri: "http://localhost:9999/callback" }, { code_verifier: "w".repeat(64) }]) {
+      const r = await redeem(bad);
+      assert.equal(r.body.error, "invalid_grant", JSON.stringify(Object.keys(bad)));
+    }
+    assert.equal(tokenCount(store), 0);
+
+    const results = await Promise.all([redeem(), redeem(), redeem()]);
+    const issued = results.filter((r) => r.status === 200);
+    assert.ok(issued.length <= 1, `at most one pair, got ${issued.length}`);
+    for (const r of results.filter((r) => r.status !== 200)) assert.equal(r.body.error, "invalid_grant");
+    assert.ok(tokenCount(store) <= 2, "store holds at most one pair");
+    assert.equal((await redeem()).body.error, "invalid_grant");
+  } finally {
+    server.close();
+  }
 });
