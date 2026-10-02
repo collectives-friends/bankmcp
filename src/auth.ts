@@ -284,7 +284,7 @@ export class SingleUserProvider implements OAuthServerProvider {
       return { error: "This sign-in page has expired or the server restarted. Go back to your assistant, click Connect again, and enter the password within 30 minutes." };
     }
 
-    const client = this.clientsStore.getClient(pending.client_id);
+    const client = this.clientsStore.getClient(pending.client_id) as OAuthClientInformationFull | undefined;
     if (!client) {
       return { error: "This sign-in page has expired or the server restarted. Go back to your assistant, click Connect again, and enter the password within 30 minutes." };
     }
@@ -312,7 +312,7 @@ export class SingleUserProvider implements OAuthServerProvider {
       expires: now() + CODE_TTL,
     };
     const code = signBlob(codeBlob);
-    // Optional local record for hygiene; verification does not require it.
+    // Local record makes the code single use; exchangeAuthorizationCode requires and consumes it.
     this.store.update((d) => {
       for (const [c, v] of Object.entries(d.oauth.codes)) if (v.expires < now()) delete d.oauth.codes[c];
       d.oauth.codes[sha256(code)] = {
@@ -341,10 +341,22 @@ export class SingleUserProvider implements OAuthServerProvider {
     if (!c || c.typ !== "code" || c.client_id !== client.client_id) throw new InvalidGrantError("Invalid or expired authorization code");
     if (redirectUri && redirectUri !== c.redirect_uri) throw new InvalidGrantError("redirect_uri does not match");
     if (resource && c.resource && resource.href !== c.resource) throw new InvalidGrantError("resource does not match");
-    return this.store.update((d) => {
-      delete d.oauth.codes[sha256(authorizationCode)];
-      return this.issue(d.oauth.tokens, client.client_id, c.scopes, c.resource);
+    // Single use (RFC 6749 §4.1.2): the signed blob proves origin, the local record proves
+    // it is unspent. Lookup and consume happen in one synchronous update, before issuing.
+    // A replay revokes the pair issued from the code (later refresh rotations are not tracked).
+    const key = sha256(authorizationCode);
+    const tokens = this.store.update((d) => {
+      const record = d.oauth.codes[key];
+      if (!record || record.issued) {
+        for (const t of record?.issued ?? []) delete d.oauth.tokens[t];
+        return undefined;
+      }
+      const issued = this.issue(d.oauth.tokens, client.client_id, c.scopes, c.resource);
+      record.issued = [sha256(issued.access_token), sha256(issued.refresh_token!)];
+      return issued;
     });
+    if (!tokens) throw new InvalidGrantError("Invalid or expired authorization code");
+    return tokens;
   }
 
   async exchangeRefreshToken(client: OAuthClientInformationFull, refreshToken: string, scopes?: string[], resource?: URL): Promise<OAuthTokens> {
