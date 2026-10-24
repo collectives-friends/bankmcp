@@ -7,12 +7,13 @@ import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middlew
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { config, isConfigured, setupProblems } from "./config.ts";
 import { eb, EnableBankingError } from "./enablebanking.ts";
-import { store } from "./store.ts";
+import { store, withStoreTask } from "./store.ts";
 import { SingleUserProvider } from "./auth.ts";
 import { connectedPage, failedPage, loginPage, privacyPage, setupPage, signInFailedPage, statusPage, termsPage } from "./pages.ts";
 import { applySetup, setupAvailable } from "./setup.ts";
 import { createServer, VERSION } from "./mcp.ts";
 import { startWatcher } from "./watcher.ts";
+import type { OAuthServerProvider } from "@modelcontextprotocol/sdk/server/auth/provider.js";
 
 export interface AppOptions {
   /** Mount the OAuth server and the /mcp endpoint. Off in local (stdio) mode. */
@@ -52,6 +53,19 @@ export function createApp(opts: AppOptions) {
       }
     },
   });
+  // SDK methods and client lookups share the tool/callback/background gate.
+  // Bind to the original provider so its internal synchronous calls are not
+  // recursively gated. The SDK permits async client-store methods.
+  const authProvider: OAuthServerProvider = store().durable ? new Proxy(provider, {
+    get(target, property) {
+      if (property === "clientsStore") return {
+        getClient: (id: string) => withStoreTask(() => target.clientsStore.getClient(id)),
+        registerClient: (client: Parameters<NonNullable<typeof target.clientsStore.registerClient>>[0]) => withStoreTask(() => target.clientsStore.registerClient!(client)),
+      };
+      const value = Reflect.get(target, property, target);
+      return typeof value === "function" ? (...args: unknown[]) => withStoreTask(() => value.apply(target, args)) : value;
+    },
+  }) : provider;
 
   // Changing the admin password logs every client out.
   function rememberPasswordFingerprint(): void {
@@ -105,7 +119,7 @@ export function createApp(opts: AppOptions) {
     res.redirect(303, "/");
   });
 
-  app.get("/healthz", (_req, res) => void res.json({ ok: true, version: VERSION, configured: isConfigured() }));
+  app.get("/healthz", (_req, res) => void res.json({ ok: true, version: VERSION, configured: isConfigured(), state: store().durable ? { mode: "supabase", revision: store().durable!.revision } : { mode: "local" } }));
 
   app.get("/privacy", (_req, res) => void res.type("html").send(privacyPage()));
   app.get("/terms", (_req, res) => void res.type("html").send(termsPage()));
@@ -114,7 +128,7 @@ export function createApp(opts: AppOptions) {
 
   if (opts.remote) app.use(
     mcpAuthRouter({
-      provider,
+      provider: authProvider,
       issuerUrl: baseUrl,
       resourceServerUrl: mcpUrl,
       resourceName: "bank-mcp",
@@ -123,9 +137,9 @@ export function createApp(opts: AppOptions) {
     }),
   );
 
-  if (opts.remote) app.post("/login", express.urlencoded({ extended: false }), (req, res) => {
+  if (opts.remote) app.post("/login", express.urlencoded({ extended: false }), async (req, res) => {
     const { request, password } = req.body as Record<string, string | undefined>;
-    const result = provider.completeLogin(String(request ?? ""), String(password ?? ""), req.ip ?? "unknown");
+    const result = await withStoreTask(() => provider.completeLogin(String(request ?? ""), String(password ?? ""), req.ip ?? "unknown"));
     if ("redirect" in result) return void res.redirect(302, result.redirect);
     if (result.requestId) return void res.status(401).type("html").send(loginPage({ requestId: result.requestId, error: result.error }));
     res.status(400).type("html").send(signInFailedPage(result.error));
@@ -133,7 +147,7 @@ export function createApp(opts: AppOptions) {
 
   // --- MCP endpoint (stateless: one transport per request) ---
 
-  const bearer = requireBearerAuth({ verifier: provider, resourceMetadataUrl: getOAuthProtectedResourceMetadataUrl(mcpUrl) });
+  const bearer = requireBearerAuth({ verifier: authProvider, resourceMetadataUrl: getOAuthProtectedResourceMetadataUrl(mcpUrl) });
 
   if (opts.remote) app.post("/mcp", bearer, express.json({ limit: "1mb" }), async (req, res) => {
     const server = createServer();
@@ -156,7 +170,7 @@ export function createApp(opts: AppOptions) {
 
   // --- Enable Banking redirect target ---
 
-  app.get("/callback", async (req, res) => {
+  app.get("/callback", async (req, res) => withStoreTask(async () => {
     const { code, state, error, error_description } = req.query as Record<string, string | undefined>;
     const pending = state ? store().takePendingAuth(state) : undefined;
     const failed = (msg: string) => res.status(400).type("html").send(failedPage(msg));
@@ -174,7 +188,7 @@ export function createApp(opts: AppOptions) {
       log("callback failed", msg);
       failed(msg);
     }
-  });
+  }));
 
   return Object.assign(app, { startWatcherOnce });
 }

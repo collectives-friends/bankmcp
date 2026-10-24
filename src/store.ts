@@ -4,6 +4,8 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { config } from "./config.ts";
+import type { DurableState } from "./durable-state.ts";
+import { acquireStateGate } from "./durable-state.ts";
 
 export interface StoredSession {
   id: string;
@@ -121,6 +123,11 @@ const empty = (): StoreData => ({
 export class Store {
   readonly path: string;
   data: StoreData;
+  durable?: DurableState;
+
+  refresh(): void {
+    if (this.durable) this.data = this.durable.refresh();
+  }
 
   constructor(path = join(config.dataDir, "bank.json")) {
     this.path = path;
@@ -137,6 +144,11 @@ export class Store {
   }
 
   save(): void {
+    if (this.durable) {
+      try { this.durable.save(this.data); }
+      catch (error) { this.data = this.durable.data(); throw error; }
+      return; // Remote mode never writes a plaintext local token cache.
+    }
     try {
       mkdirSync(join(this.path, ".."), { recursive: true });
       const tmp = `${this.path}.tmp`;
@@ -150,9 +162,12 @@ export class Store {
 
   /** Mutate under a callback and persist once. */
   update<T>(fn: (d: StoreData) => T): T {
-    const result = fn(this.data);
-    this.save();
-    return result;
+    const before = structuredClone(this.data);
+    try {
+      const result = fn(this.data);
+      this.save();
+      return result;
+    } catch (error) { this.data = this.durable?.data() ?? before; throw error; }
   }
 
   // --- Sessions & accounts ---
@@ -257,4 +272,12 @@ export class Store {
 let shared: Store | undefined;
 export function store(): Store {
   return (shared ??= new Store());
+}
+
+/** The gate follows the actual operation promise, never the socket lifecycle. */
+export async function withStoreTask<T>(fn: () => T | Promise<T>): Promise<T> {
+  if (!store().durable) return await fn();
+  const release = await acquireStateGate();
+  try { store().refresh(); return await fn(); }
+  finally { release(); }
 }

@@ -66,6 +66,8 @@ export interface Session {
 export interface SessionStatus {
   status: string;
   accounts: string[];
+  accounts_data?: Array<{ uid: string; identification_hash: string }>;
+  psu_type?: string;
   aspsp: { name: string; country: string };
   access: { valid_until: string };
   created: string;
@@ -158,6 +160,7 @@ export const eb = {
 
   createSession: (code: string) => api<Session>("POST", "/sessions", { code }),
   getSession: (sessionId: string) => api<SessionStatus>("GET", `/sessions/${sessionId}`),
+  getAccountDetails: (uid: string) => api<AccountResource>("GET", `/accounts/${uid}/details`),
   deleteSession: (sessionId: string) => api<unknown>("DELETE", `/sessions/${sessionId}`),
 
   getBalances: async (accountUid: string) => (await api<{ balances: Balance[] }>("GET", `/accounts/${accountUid}/balances`)).balances,

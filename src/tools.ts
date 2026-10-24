@@ -3,7 +3,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { config, isConfigured } from "./config.ts";
 import { eb, EnableBankingError } from "./enablebanking.ts";
-import { store, type StoredAccount, type WatchRule } from "./store.ts";
+import { store, withStoreTask, type StoredAccount, type WatchRule } from "./store.ts";
 import { daysAgo, daysLeft, describeAccount, isoDate, simplifyBalances, simplifyTransaction } from "./data.ts";
 import { runWatches } from "./watcher.ts";
 
@@ -54,7 +54,7 @@ function guard<A extends unknown[]>(fn: (...args: A) => Promise<ReturnType<typeo
             (config.localMode ? " The browser will warn about a self-signed certificate on localhost; continue past it." : ""),
         );
       }
-      return await fn(...args);
+      return await withStoreTask(() => fn(...args));
     } catch (err) {
       if (err instanceof ToolError) return fail(err.message);
       if (err instanceof EnableBankingError) return fail(`Enable Banking returned ${err.status}: ${err.body.slice(0, 500)}`);
