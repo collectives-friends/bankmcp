@@ -2,6 +2,7 @@
 // the Enable Banking redirect target, and a status page.
 import { createHash } from "node:crypto";
 import express from "express";
+import { rateLimit } from "express-rate-limit";
 import { mcpAuthRouter, getOAuthProtectedResourceMetadataUrl } from "@modelcontextprotocol/sdk/server/auth/router.js";
 import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -137,8 +138,10 @@ export function createApp(opts: AppOptions) {
     }),
   );
 
-  if (opts.remote) app.post("/login", express.urlencoded({ extended: false }), async (req, res) => {
-    const { request, password } = req.body as Record<string, string | undefined>;
+  // Reject abusive requests before refreshing durable state or checking passwords.
+  const loginLimiter = rateLimit({ windowMs: 15 * 60_000, limit: 20, standardHeaders: "draft-8", legacyHeaders: false });
+  if (opts.remote) app.post("/login", loginLimiter, express.urlencoded({ extended: false, limit: "8kb" }), async (req, res) => {
+    const { request, password } = (req.body ?? {}) as Record<string, string | undefined>;
     const result = await withStoreTask(() => provider.completeLogin(String(request ?? ""), String(password ?? ""), req.ip ?? "unknown"));
     if ("redirect" in result) return void res.redirect(302, result.redirect);
     if (result.requestId) return void res.status(401).type("html").send(loginPage({ requestId: result.requestId, error: result.error }));

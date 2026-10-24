@@ -93,6 +93,20 @@ test("an aborted HTTP client cannot release a pending state operation or lose a 
     assert.ok(shared.data.pending_auth.first);assert.ok(shared.data.pending_auth.second);
   }finally{unblock();server.closeAllConnections();await new Promise<void>(r=>server.close(()=>r()));shared.data=originalData;shared.durable=originalDurable;}
 });
+test("login rate limiting rejects excess requests before reading durable state",async()=>{
+  let row:StateRow={revision:1,envelope:seal(empty(),key),operation_id:randomUUID()},reads=0;
+  const backend={read:()=>{reads++;return {...row};},commit:(r:number,e:string,op:string)=>{assert.equal(r,row.revision);row={revision:r+1,envelope:e,operation_id:op};return {...row};}};
+  const shared=store(),originalData=shared.data,originalDurable=shared.durable;
+  shared.durable=new DurableState(backend,key,row);shared.data=shared.durable.data();
+  const remote=createServer(createApp({remote:true}));
+  try{
+    await new Promise<void>(r=>remote.listen(0,"127.0.0.1",r));const port=(remote.address() as import("node:net").AddressInfo).port;
+    for(let i=0;i<20;i++)assert.equal((await fetch(`http://127.0.0.1:${port}/login`,{method:"POST"})).status,400);
+    const before=reads,response=await fetch(`http://127.0.0.1:${port}/login`,{method:"POST"});
+    assert.equal(response.status,429);assert.ok(response.headers.has("Retry-After"));assert.equal(reads,before);
+  }finally{remote.closeAllConnections();await new Promise<void>(r=>remote.close(()=>r()));shared.data=originalData;shared.durable=originalDurable;}
+});
+
 test("durable OAuth SDK proxy completes registration, login, token exchange and verification",async()=>{
   let row:StateRow={revision:1,envelope:seal(empty(),key),operation_id:randomUUID()};
   const backend={read:()=>({...row}),commit:(r:number,e:string,op:string)=>{assert.equal(r,row.revision);row={revision:r+1,envelope:e,operation_id:op};return {...row};}};
