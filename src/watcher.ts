@@ -4,7 +4,7 @@
 // transaction ids already triggered a notification.
 import { config } from "./config.ts";
 import { eb, EnableBankingError } from "./enablebanking.ts";
-import { store, type StoredAccount, type Watch } from "./store.ts";
+import { store, withStoreTask, type StoredAccount, type Watch } from "./store.ts";
 import { daysLeft, isoDate, simplifyBalances, simplifyTransaction, type SimpleTransaction } from "./data.ts";
 
 export interface WatchEvent {
@@ -161,12 +161,15 @@ async function notify(url: string, event: WatchEvent): Promise<void> {
 
 /** Starts the background loop. Returns a stop function. */
 export function startWatcher(everyMinutes = 5): () => void {
-  const tick = () =>
-    runWatches()
+  const tick = async () => {
+    try {
+      await withStoreTask(() => runWatches())
       .then((r) => {
         if (r.events.length || r.errors.length) log(`checked ${r.checked_accounts}, events ${r.events.length}, errors ${r.errors.length}`, r.errors);
       })
       .catch((err) => log("run failed", err));
+    } catch { log("durable state unavailable; poll skipped"); }
+  };
   const timer = setInterval(tick, everyMinutes * 60_000);
   setTimeout(tick, 15_000).unref();
   return () => clearInterval(timer);

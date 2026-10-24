@@ -4,7 +4,10 @@ import { createServer as createHttpServer } from "node:http";
 import { config, setupProblems, tlsOptions } from "./config.ts";
 import { createApp } from "./app.ts";
 import { setupAvailable } from "./setup.ts";
+import { initializeDurableStore } from "./state-migration.ts";
 
+// No listener/health success until authenticated state and existing grants load.
+await initializeDurableStore();
 const app = createApp({ remote: true });
 const tls = tlsOptions();
 const httpServer = tls ? createHttpsServer(tls, app) : createHttpServer(app);
